@@ -2,17 +2,63 @@
 @import "@nuxt/ui";
 
 @theme static {
-  --font-sans: 'Public Sans', sans-serif;
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-inter: 'Inter', sans-serif;
 
-  --color-green-50: #EFFDF5;
-  --color-green-100: #D9FBE8;
-  --color-green-200: #B3F5D1;
-  --color-green-300: #75EDAE;
-  --color-green-400: #00DC82;
-  --color-green-500: #00C16A;
-  --color-green-600: #00A155;
-  --color-green-700: #007F45;
-  --color-green-800: #016538;
-  --color-green-900: #0A5331;
-  --color-green-950: #052E16;
+  --color-primary-50: #EAF4FF;
+  --color-primary-100: #D4E8FF;
+  --color-primary-200: #A8D1FF;
+  --color-primary-300: #7DBBFF;
+  --color-primary-400: #5CB8FF;
+  --color-primary-500: #1677FF;
+  --color-primary-600: #0059E0;
+  --color-primary-700: #0049B8;
+  --color-primary-800: #00398F;
+  --color-primary-900: #002A66;
+  --color-primary-950: #001A43;
+}
+
+@layer theme {
+  :root {
+    --ui-radius: 0.5rem;
+    --ui-bg: #F5F7FA;
+    --ui-bg-muted: #EAF1F8;
+    --ui-bg-elevated: #FFFFFF;
+    --ui-bg-accented: #DCE7F2;
+    --ui-bg-inverted: #08151E;
+    --ui-text: #25323C;
+    --ui-text-muted: #55636E;
+    --ui-text-dimmed: #68787E;
+    --ui-text-toned: #42505C;
+    --ui-text-highlighted: #08151E;
+    --ui-text-inverted: #F5F7FA;
+    --ui-primary: #1677FF;
+    --ui-primary-contrast: #FFFFFF;
+    --ui-border: #C3CDD6;
+    --ui-border-muted: #C3CDD6;
+    --ui-border-accented: #A7B4C0;
+    --ui-border-inverted: #08151E;
+    --ui-success: #16A34A;
+  }
+
+  .dark {
+    --ui-bg: #08151E;
+    --ui-bg-muted: #14212B;
+    --ui-bg-elevated: #0D2A4A;
+    --ui-bg-accented: #1F2B35;
+    --ui-bg-inverted: #F5F7FA;
+    --ui-text: #D7E4F2;
+    --ui-text-muted: #AAB7C4;
+    --ui-text-dimmed: #8B90A0;
+    --ui-text-toned: #C1C6D7;
+    --ui-text-highlighted: #FFFFFF;
+    --ui-text-inverted: #08151E;
+    --ui-primary: #5CB8FF;
+    --ui-primary-contrast: #00275F;
+    --ui-border: #1A365D;
+    --ui-border-muted: #1A365D;
+    --ui-border-accented: #2A3641;
+    --ui-border-inverted: #F5F7FA;
+    --ui-success: #22C55E;
+  }
 }
