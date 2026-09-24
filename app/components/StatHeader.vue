@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ArrowDownRight, ArrowUpRight, CheckCircle2, Clock3, UsersRound } from 'lucide-vue-next'
 import { MOCK_STATS } from '@/utils/mockData'
-import { Card, CardContent } from '@/components/ui/card'
 
 const props = withDefaults(
   defineProps<{
@@ -20,72 +18,73 @@ const props = withDefaults(
 const formatNumber = (value: number) => value.toLocaleString('id-ID')
 
 const persentaseSudah = computed(() =>
-  props.totalSiswa === 0 ? 0 : ((props.sudahVote / props.totalSiswa) * 100).toFixed(1)
+  props.totalSiswa === 0 ? 0 : Number(((props.sudahVote / props.totalSiswa) * 100).toFixed(1))
 )
 
-const persentaseBelum = computed(() => (100 - Number(persentaseSudah.value)).toFixed(1))
+const persentaseBelum = computed(() => Number((100 - persentaseSudah.value).toFixed(1)))
 
 const stats = computed(() => [
   {
     label: 'Total Siswa (DPT)',
     value: formatNumber(props.totalSiswa),
     sub: 'Daftar Pemilih Tetap',
-    icon: UsersRound,
-    iconClass: 'bg-blue-50 text-blue-600',
+    icon: 'i-lucide-users-round',
+    iconClass: 'bg-primary-500/10 text-primary-400',
     badge: 'Target partisipasi 100%',
-    badgeClass: 'bg-slate-100 text-slate-600',
-    trendClass: 'text-slate-400',
-    TrendIcon: ArrowUpRight
+    badgeClass: 'bg-white/5 text-[var(--ui-text-muted)]',
+    trendIcon: 'i-lucide-arrow-up-right',
+    trendClass: 'text-[var(--ui-text-dimmed)]'
   },
   {
     label: 'Sudah Vote',
     value: formatNumber(props.sudahVote),
     sub: 'Berhasil memberikan suara',
-    icon: CheckCircle2,
-    iconClass: 'bg-emerald-50 text-emerald-600',
+    icon: 'i-lucide-check-circle-2',
+    iconClass: 'bg-[#22C55E]/10 text-[#22C55E]',
     badge: `${persentaseSudah.value}% partisipasi`,
-    badgeClass: 'bg-emerald-50 text-emerald-600',
-    trendClass: 'text-emerald-500',
-    TrendIcon: ArrowUpRight
+    badgeClass: 'bg-[#22C55E]/10 text-[#22C55E]',
+    trendIcon: 'i-lucide-arrow-up-right',
+    trendClass: 'text-[#22C55E]'
   },
   {
     label: 'Belum Vote',
     value: formatNumber(props.belumVote),
     sub: 'Menunggu konfirmasi',
-    icon: Clock3,
-    iconClass: 'bg-rose-50 text-rose-500',
+    icon: 'i-lucide-clock-3',
+    iconClass: 'bg-rose-500/10 text-rose-400',
     badge: `${persentaseBelum.value}% menunggu`,
-    badgeClass: 'bg-rose-50 text-rose-500',
-    trendClass: 'text-rose-500',
-    TrendIcon: ArrowDownRight
+    badgeClass: 'bg-rose-500/10 text-rose-400',
+    trendIcon: 'i-lucide-arrow-down-right',
+    trendClass: 'text-rose-400'
   }
 ])
 </script>
 
 <template>
   <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-    <Card
+    <UCard
       v-for="stat in stats"
       :key="stat.label"
-      class="rounded-2xl border border-slate-100 shadow-sm"
+      variant="outline"
+      class="rounded-2xl border-[var(--ui-border)] shadow-[0_4px_24px_rgba(7,26,51,0.4)]"
     >
-      <CardContent class="flex flex-col gap-4">
+      <div class="flex flex-col gap-4">
         <div class="flex items-start justify-between">
-          <div
+          <span
             class="flex size-12 shrink-0 items-center justify-center rounded-xl"
             :class="stat.iconClass"
           >
-            <component
-              :is="stat.icon"
+            <UIcon
+              :name="stat.icon"
               class="size-6"
             />
-          </div>
+          </span>
           <span
             class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
             :class="stat.badgeClass"
           >
-            <component
-              :is="stat.TrendIcon"
+            <UIcon
+              :name="stat.trendIcon"
               class="size-3.5"
               :class="stat.trendClass"
             />
@@ -94,17 +93,55 @@ const stats = computed(() => [
         </div>
 
         <div>
-          <p class="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
+          <p class="font-inter text-3xl font-bold tracking-tight text-[var(--ui-text)]">
             {{ stat.value }}
           </p>
-          <p class="mt-1 text-sm font-medium text-slate-500">
+          <p class="mt-1 text-sm font-medium text-[var(--ui-text)]">
             {{ stat.label }}
           </p>
-          <p class="text-xs text-slate-400">
+          <p class="text-xs text-[var(--ui-text-dimmed)]">
             {{ stat.sub }}
           </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </UCard>
+
+    <!-- Turnout Progress -->
+    <UCard
+      variant="outline"
+      class="rounded-2xl border-[var(--ui-border)] shadow-[0_4px_24px_rgba(7,26,51,0.4)] md:col-span-3"
+    >
+      <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <span class="flex size-10 items-center justify-center rounded-xl bg-primary-500/10 text-primary-400">
+              <UIcon
+                name="i-lucide-activity"
+                class="size-5"
+              />
+            </span>
+            <div>
+              <p class="text-sm font-semibold text-[var(--ui-text)]">
+                Partisipasi Pemilih
+              </p>
+              <p class="text-xs text-[var(--ui-text-dimmed)]">
+                {{ formatNumber(props.sudahVote) }} dari {{ formatNumber(props.totalSiswa) }} siswa telah memilih
+              </p>
+            </div>
+          </div>
+          <p class="font-inter text-2xl font-bold tracking-tight text-primary-400">
+            {{ persentaseSudah }}%
+          </p>
+        </div>
+
+        <UProgress
+          :model-value="persentaseSudah"
+          size="md"
+          :ui="{
+            indicator: 'rounded-full bg-gradient-to-r from-primary-500 to-primary-400 shadow-[0_0_12px_rgba(22,119,255,0.6)] transition-all duration-500'
+          }"
+        />
+      </div>
+    </UCard>
   </div>
 </template>

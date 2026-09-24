@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import type { Component } from 'vue'
+import { computed } from 'vue'
 import type { ChartData, ChartOptions, TooltipItem } from 'chart.js'
 import { Pie } from 'vue-chartjs'
 import type { Kandidat } from '@/utils/mockData'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-defineProps<{
+const props = defineProps<{
   chartId: string
   title: string
   description: string
-  icon: Component
+  icon: string
   data: ChartData<'pie'>
   kandidat: Kandidat[]
   total: number
@@ -19,16 +18,15 @@ const chartOptions: ChartOptions<'pie'> = {
   responsive: true,
   maintainAspectRatio: false,
   resizeDelay: 100,
-  animation: false,
   plugins: {
     legend: {
       display: false
     },
     tooltip: {
-      backgroundColor: '#FFFFFF',
-      titleColor: '#0F172A',
-      bodyColor: '#64748B',
-      borderColor: '#E2E8F0',
+      backgroundColor: '#0D2A4A',
+      titleColor: '#D7E4F2',
+      bodyColor: '#AAB7C4',
+      borderColor: '#1A365D',
       borderWidth: 1,
       padding: 12,
       cornerRadius: 10,
@@ -48,32 +46,44 @@ const formatNumber = (value: number) => value.toLocaleString('id-ID')
 
 const persentase = (jumlah: number, total: number) =>
   total === 0 ? 0 : ((jumlah / total) * 100).toFixed(1)
+
+const leaderId = computed(() => {
+  if (!props.kandidat.length) {
+    return -1
+  }
+  const leader = props.kandidat.reduce<Kandidat | undefined>(
+    (max, item) => (!max || item.jumlahSuara > max.jumlahSuara ? item : max),
+    props.kandidat[0]
+  )
+  return leader?.id ?? -1
+})
 </script>
 
 <template>
-  <Card class="rounded-2xl border border-slate-100 shadow-sm">
-    <CardHeader>
+  <UCard
+    variant="outline"
+    class="rounded-2xl border-[var(--ui-border)] shadow-[0_4px_24px_rgba(7,26,51,0.4)]"
+  >
+    <template #header>
       <div class="flex items-center gap-3">
-        <div
-          class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"
-        >
-          <component
-            :is="icon"
+        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-500/10 text-primary-400">
+          <UIcon
+            :name="icon"
             class="size-5"
           />
-        </div>
+        </span>
         <div>
-          <CardTitle class="text-slate-900">
+          <p class="text-base font-bold text-[var(--ui-text)]">
             {{ title }}
-          </CardTitle>
-          <CardDescription class="text-slate-500">
+          </p>
+          <p class="text-sm text-[var(--ui-text-dimmed)]">
             {{ description }}
-          </CardDescription>
+          </p>
         </div>
       </div>
-    </CardHeader>
+    </template>
 
-    <CardContent class="flex flex-col gap-6">
+    <div class="flex flex-col gap-6">
       <div class="relative mx-auto h-52 w-full max-w-xs sm:h-60">
         <ClientOnly>
           <Pie
@@ -83,7 +93,7 @@ const persentase = (jumlah: number, total: number) =>
           />
           <template #fallback>
             <div
-              class="animate-pulse rounded-2xl bg-slate-100"
+              class="animate-pulse rounded-2xl bg-white/5"
               role="status"
               aria-label="Memuat grafik"
             >
@@ -98,35 +108,51 @@ const persentase = (jumlah: number, total: number) =>
         <div
           v-for="item in kandidat"
           :key="item.id"
-          class="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-3.5 py-3"
+          class="flex items-center gap-3 rounded-xl border px-3.5 py-3 transition-all"
+          :class="[
+            item.id === leaderId
+              ? 'border-[#22C55E]/50 bg-[#22C55E]/5 shadow-[0_0_16px_rgba(34,197,94,0.15)]'
+              : 'border-[var(--ui-border)] bg-white/[0.03]'
+          ]"
         >
           <span
             class="size-2.5 shrink-0 rounded-full ring-4"
-            :style="{ backgroundColor: item.warna, ['--tw-ring-color' as string]: `${item.warna}30` }"
+            :style="{
+              'backgroundColor': item.warna,
+              '--tw-ring-color': `${item.warna}30`
+            }"
           />
           <div class="min-w-0 flex-1">
-            <p class="truncate text-sm font-semibold text-slate-900">
+            <p class="flex items-center gap-1.5 truncate text-sm font-semibold text-[var(--ui-text)]">
               {{ item.nama }}
+              <UBadge
+                v-if="item.id === leaderId"
+                color="success"
+                variant="soft"
+                size="xs"
+              >
+                Terbanyak
+              </UBadge>
             </p>
-            <p class="truncate text-xs text-slate-400">
+            <p class="truncate text-xs text-[var(--ui-text-dimmed)]">
               {{ item.visi }}
             </p>
           </div>
           <div class="text-end">
-            <p class="text-sm font-bold text-slate-900">
+            <p class="font-inter text-sm font-bold text-[var(--ui-text)]">
               {{ formatNumber(item.jumlahSuara) }}
             </p>
-            <p class="text-xs font-medium text-blue-600">
+            <p class="text-xs font-medium text-primary-400">
               {{ persentase(item.jumlahSuara, total) }}%
             </p>
           </div>
         </div>
 
-        <div class="mt-1 flex items-center justify-between border-t border-slate-100 px-1 pt-3.5">
-          <span class="text-sm font-medium text-slate-500">Total Suara Masuk</span>
-          <span class="text-sm font-bold text-slate-900">{{ formatNumber(total) }}</span>
+        <div class="mt-1 flex items-center justify-between border-t border-[var(--ui-border)] px-1 pt-3.5">
+          <span class="text-sm font-medium text-[var(--ui-text-muted)]">Total Suara Masuk</span>
+          <span class="font-inter text-sm font-bold text-[var(--ui-text)]">{{ formatNumber(total) }}</span>
         </div>
       </div>
-    </CardContent>
-  </Card>
+    </div>
+  </UCard>
 </template>

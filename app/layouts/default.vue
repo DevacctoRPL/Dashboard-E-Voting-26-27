@@ -1,59 +1,42 @@
 <script setup lang="ts">
-import {
-  Bell,
-  ChartPie,
-  ChevronRight,
-  LayoutDashboard,
-  LogOut,
-  Search,
-  Settings,
-  UsersRound,
-  Vote
-} from 'lucide-vue-next'
-import { Input } from '@/components/ui/input'
-
 const route = useRoute()
 
 const mainMenu = [
-  {
-    label: 'Dashboard',
-    icon: LayoutDashboard,
-    to: '/'
-  },
-  {
-    label: 'Data Pemilih',
-    icon: UsersRound,
-    to: '/'
-  },
-  {
-    label: 'Quick Count',
-    icon: ChartPie,
-    to: '/quick-count'
-  }
+  { label: 'Data Pemilih', icon: 'i-lucide-users-round', to: '/' },
+  { label: 'Quick Count', icon: 'i-lucide-chart-pie', to: '/quick-count' }
 ]
+
+const isActive = (item: (typeof mainMenu)[number]) => route.path === item.to
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 lg:flex">
+  <div class="min-h-screen lg:flex">
     <!-- ===== Sidebar ===== -->
-    <aside class="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col gap-8 border-r border-slate-100 bg-white px-5 py-6 lg:flex">
+    <aside class="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col gap-8 border-r border-[var(--ui-border)] bg-[rgba(13,42,74,0.85)] px-5 py-6 backdrop-blur-xl lg:flex">
       <!-- Logo -->
       <NuxtLink
         to="/"
         class="flex items-center gap-3 px-2"
       >
-        <span class="flex size-10 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-blue-200/60">
-          <Vote class="size-5" />
+        <span class="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-400 text-white shadow-[0_4px_16px_rgba(22,119,255,0.35)]">
+          <UIcon
+            name="i-lucide-vote"
+            class="size-5"
+          />
         </span>
         <div class="leading-tight">
-          <p class="text-sm font-bold text-slate-900">E-Voting Dashboard</p>
-          <p class="text-xs text-slate-400">OSIS &amp; MPK 2026/2027</p>
+          <p class="text-sm font-bold text-[var(--ui-text)]">
+            E-Voting Dashboard
+          </p>
+          <p class="text-xs text-[var(--ui-text-dimmed)]">
+            OSIS &amp; MPK 2026/2027
+          </p>
         </div>
       </NuxtLink>
 
       <!-- Main Menu -->
-      <nav class="flex flex-1 flex-col gap-1 overflow-y-auto">
-        <p class="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+      <nav class="flex flex-1 flex-col gap-2 overflow-y-auto">
+        <p class="px-3 pb-1 font-inter text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--ui-text-dimmed)]">
           Main Menu
         </p>
 
@@ -61,53 +44,60 @@ const mainMenu = [
           v-for="item in mainMenu"
           :key="item.label"
           :to="item.to"
-          active-class="bg-blue-50 text-blue-600"
-          inactive-class="text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-          class="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors"
-          :class="[route.path === item.to && 'bg-blue-50 text-blue-600']"
+          class="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all"
+          :class="[
+            isActive(item)
+              ? 'bg-primary-500 text-white shadow-[0_0_16px_rgba(22,119,255,0.45)]'
+              : 'text-[var(--ui-text-muted)] hover:bg-white/5 hover:text-[var(--ui-text)]'
+          ]"
         >
-          <component
-            :is="item.icon"
+          <UIcon
+            :name="item.icon"
             class="size-5"
           />
           <span class="flex-1">{{ item.label }}</span>
-          <ChevronRight class="size-4 opacity-0 transition-opacity group-data-active:opacity-60 group-[.active]:opacity-60" />
+          <UIcon
+            name="i-lucide-chevron-right"
+            class="size-4 opacity-0 transition-opacity"
+            :class="[isActive(item) && 'opacity-70']"
+          />
         </NuxtLink>
       </nav>
 
       <!-- Bottom Menu -->
-      <div class="flex flex-col gap-1 border-t border-slate-100 pt-4">
-        <p class="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-          Lainnya
-        </p>
-
+      <div class="flex flex-col gap-3 border-t border-[var(--ui-border)] pt-4">
         <NuxtLink
           to="/"
-          inactive-class="text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-          class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors"
+          class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--ui-text-muted)] transition-colors hover:bg-white/5 hover:text-[var(--ui-text)]"
         >
-          <Settings class="size-5" />
+          <UIcon
+            name="i-lucide-settings"
+            class="size-5"
+          />
           Pengaturan
         </NuxtLink>
 
-        <div class="mt-2 flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3">
-          <span class="flex size-10 items-center justify-center rounded-full bg-primary/90 text-sm font-bold text-white">
+        <div class="flex items-center gap-3 rounded-2xl border border-[var(--ui-border)] bg-white/[0.04] p-3">
+          <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-400 text-sm font-bold text-white">
             RZ
           </span>
           <div class="min-w-0 flex-1 leading-tight">
-            <p class="truncate text-sm font-semibold text-slate-900">
+            <p class="truncate text-sm font-semibold text-[var(--ui-text)]">
               Rizka Zahra
             </p>
-            <p class="truncate text-xs text-slate-400">
+            <p class="truncate text-xs text-[var(--ui-text-dimmed)]">
               Administrator
             </p>
           </div>
           <button
             type="button"
-            class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-white hover:text-rose-500"
+            class="rounded-lg p-1.5 text-[var(--ui-text-dimmed)] transition-colors hover:bg-rose-500/10 hover:text-rose-400"
             aria-label="Keluar"
           >
-            <LogOut class="size-4" />
+            <UIcon
+              name="i-lucide-log-out"
+              class="size-4"
+            />
           </button>
         </div>
       </div>
@@ -116,61 +106,67 @@ const mainMenu = [
     <!-- ===== Main Area ===== -->
     <div class="flex min-h-screen flex-1 flex-col lg:pl-72">
       <!-- Top Header Bar -->
-      <header class="sticky top-0 z-30 border-b border-slate-100 bg-white/80 backdrop-blur">
+      <header class="sticky top-0 z-30 border-b border-[var(--ui-border)] bg-[rgba(8,21,30,0.75)] backdrop-blur-xl">
         <div class="flex flex-col gap-4 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-8">
           <div class="flex items-center gap-3">
-            <span class="flex size-10 items-center justify-center rounded-xl bg-primary text-white lg:hidden">
-              <Vote class="size-5" />
+            <span class="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-400 text-white shadow-[0_4px_16px_rgba(22,119,255,0.35)] lg:hidden">
+              <UIcon
+                name="i-lucide-vote"
+                class="size-5"
+              />
             </span>
             <div>
-              <p class="text-lg font-bold text-slate-900">
+              <p class="text-lg font-bold tracking-tight text-[var(--ui-text)]">
                 Welcome back, Admin!
               </p>
-              <p class="text-sm text-slate-400">
+              <p class="text-sm text-[var(--ui-text-dimmed)]">
                 Kelola pemilihan OSIS &amp; MPK hari ini.
               </p>
             </div>
           </div>
 
           <div class="flex items-center gap-3">
-            <div class="relative w-full md:w-72">
-              <Search class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                type="search"
-                placeholder="Cari cepat..."
-                class="h-10 rounded-xl border-slate-200 bg-slate-50 pl-9 text-sm focus-visible:bg-white"
-              />
-            </div>
+            <UInput
+              type="search"
+              placeholder="Cari cepat..."
+              variant="soft"
+              color="neutral"
+              icon="i-lucide-search"
+              class="w-full md:w-72"
+            />
 
             <button
               type="button"
-              class="relative flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900"
+              class="relative flex size-10 items-center justify-center rounded-xl border border-[var(--ui-border)] bg-white/5 text-[var(--ui-text-muted)] transition-colors hover:bg-white/10 hover:text-[var(--ui-text)]"
               aria-label="Notifikasi"
             >
-              <Bell class="size-4" />
-              <span class="absolute right-2.5 top-2.5 size-2 rounded-full bg-primary ring-2 ring-white" />
+              <UIcon
+                name="i-lucide-bell"
+                class="size-4"
+              />
+              <span class="absolute right-2.5 top-2.5 size-2 rounded-full bg-primary-400 ring-2 ring-[#08151E]" />
             </button>
           </div>
         </div>
       </header>
 
       <!-- Content -->
-      <main class="flex-1 px-4 py-6 md:px-8 md:py-8">
+      <main class="flex-1 px-4 py-6 pb-28 md:px-8 md:py-8 lg:pb-8">
         <slot />
       </main>
     </div>
 
     <!-- ===== Mobile Nav ===== -->
-    <nav class="fixed inset-x-0 bottom-0 z-40 flex justify-around border-t border-slate-100 bg-white px-4 py-2 lg:hidden">
+    <nav class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 border-t border-[var(--ui-border)] bg-[rgba(8,21,30,0.9)] px-4 py-2 backdrop-blur-xl lg:hidden">
       <NuxtLink
         v-for="item in mainMenu"
         :key="item.label"
         :to="item.to"
-        class="flex flex-col items-center gap-1 rounded-xl px-3 py-1.5 text-[11px] font-medium"
-        :class="route.path === item.to ? 'text-blue-600' : 'text-slate-400'"
+        class="flex flex-col items-center gap-1 rounded-xl px-3 py-1.5 text-[11px] font-medium transition-colors"
+        :class="isActive(item) ? 'text-primary-400' : 'text-[var(--ui-text-dimmed)]'"
       >
-        <component
-          :is="item.icon"
+        <UIcon
+          :name="item.icon"
           class="size-5"
         />
         {{ item.label }}

@@ -1,34 +1,55 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { ArrowRight, ChartPie, Filter, Search, UsersRound } from 'lucide-vue-next'
-import { MOCK_SISWA } from '@/utils/mockData'
+import { computed } from 'vue'
+import { MOCK_SISWA, MOCK_STATS, MOCK_VOTE_RESULTS, getKandidat } from '@/utils/mockData'
 import StatHeader from '@/components/StatHeader.vue'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table'
 
-const searchQuery = ref('')
+const rtf = new Intl.RelativeTimeFormat('id', { numeric: 'auto' })
 
-const filteredSiswa = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase()
-
-  if (!query) {
-    return MOCK_SISWA
+const waktuRelatif = (iso: string) => {
+  const diffMin = Math.round((Date.parse(iso) - Date.now()) / 60000)
+  if (Math.abs(diffMin) < 60) {
+    return rtf.format(diffMin, 'minute')
   }
+  const diffHour = Math.round(diffMin / 60)
+  if (Math.abs(diffHour) < 24) {
+    return rtf.format(diffHour, 'hour')
+  }
+  return rtf.format(Math.round(diffHour / 24), 'day')
+}
 
-  return MOCK_SISWA.filter(siswa =>
-    siswa.nama.toLowerCase().includes(query) || siswa.nisn.includes(query)
-  )
+const avatarClass = computed(() => {
+  const colors = [
+    'from-primary-500 to-primary-400',
+    'from-[#22C55E] to-[#4ae176]',
+    'from-primary-400 to-[#5CB8FF]'
+  ]
+  return (index: number) => colors[index % colors.length]
 })
+
+const aktivitas = computed(() =>
+  MOCK_SISWA
+    .filter(s => s.status === 'sudah')
+    .sort((a, b) => Date.parse(b.votedAt ?? '') - Date.parse(a.votedAt ?? ''))
+    .slice(0, 5)
+)
+
+const events = computed(() =>
+  (['osis', 'mpk'] as const).map((event) => {
+    const kandidat = MOCK_VOTE_RESULTS[event].kandidat
+    const total = kandidat.reduce((acc, k) => acc + k.jumlahSuara, 0)
+    const leader = kandidat.reduce((max, k) => (k.jumlahSuara > max.jumlahSuara ? k : max))
+    return {
+      event,
+      label: MOCK_VOTE_RESULTS[event].label,
+      total,
+      leader,
+      persen: Math.min(100, Math.round((total / MOCK_STATS.totalSiswa) * 100))
+    }
+  })
+)
+
+const initial = (nama: string) =>
+  nama.split(' ').map(palavra => palavra[0]).join('').slice(0, 2).toUpperCase()
 </script>
 
 <template>
@@ -36,141 +57,158 @@ const filteredSiswa = computed(() => {
     <!-- Page Header -->
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold tracking-tight text-slate-900">
-          Data Pemilih
+        <h1 class="text-2xl font-bold tracking-tight text-[var(--ui-text)]">
+          Dashboard
         </h1>
-        <p class="mt-1 text-sm text-slate-500">
-          Pantau rekap Daftar Pemilih Tetap Pemilihan Ketua OSIS &amp; MPK.
+        <p class="mt-1 text-sm text-[var(--ui-text-muted)]">
+          Rekap pemantauan pemilihan Ketua OSIS &amp; MPK secara langsung.
         </p>
       </div>
 
-      <Button
-        as-child
-        size="lg"
-        class="rounded-xl shadow-lg shadow-blue-200/50"
-      >
-        <NuxtLink
-          to="/quick-count"
-          class="inline-flex items-center gap-2"
+      <div class="flex flex-wrap items-center gap-3">
+        <UButton
+          to="/data-pemilih"
+          variant="outline"
+          size="lg"
+          icon="i-lucide-users-round"
+          class="rounded-xl"
         >
-          <ChartPie class="size-4" />
+          Kelola Data Pemilih
+        </UButton>
+        <UButton
+          to="/quick-count"
+          size="lg"
+          icon="i-lucide-chart-pie"
+          trailing-icon="i-lucide-arrow-right"
+          class="rounded-xl bg-primary-500 text-white shadow-[0_4px_20px_rgba(22,119,255,0.35)] hover:bg-primary-400"
+        >
           Lihat Quick Count
-          <ArrowRight class="size-4" />
-        </NuxtLink>
-      </Button>
+        </UButton>
+      </div>
     </div>
 
     <StatHeader />
 
-    <Card class="rounded-2xl border border-slate-100 shadow-sm">
-      <CardHeader class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div class="flex items-center gap-3">
-          <div class="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-            <UsersRound class="size-5" />
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <!-- Aktivitas Vote Terbaru -->
+      <UCard
+        variant="outline"
+        class="rounded-2xl border-[var(--ui-border)] shadow-[0_4px_24px_rgba(7,26,51,0.4)]"
+      >
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center gap-3">
+            <span class="flex size-10 items-center justify-center rounded-xl bg-primary-500/10 text-primary-400">
+              <UIcon
+                name="i-lucide-radio"
+                class="size-5"
+              />
+            </span>
+            <div>
+              <p class="text-base font-bold text-[var(--ui-text)]">
+                Aktivitas Vote Terbaru
+              </p>
+              <p class="text-sm text-[var(--ui-text-dimmed)]">
+                Pemilihan suara yang baru saja masuk.
+              </p>
+            </div>
           </div>
-          <div>
-            <CardTitle class="text-slate-900">
-              Daftar Siswa
-            </CardTitle>
-            <CardDescription class="text-slate-500">
-              {{ filteredSiswa.length }} dari {{ MOCK_SISWA.length }} siswa ditampilkan
-            </CardDescription>
-          </div>
-        </div>
 
-        <div class="flex w-full items-center gap-2 md:w-auto">
-          <div class="relative w-full md:w-72">
-            <Search class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              v-model="searchQuery"
-              type="search"
-              placeholder="Cari nama / NISN..."
-              class="h-10 rounded-xl border-slate-200 bg-slate-50 pl-9 text-sm focus-visible:bg-white"
-            />
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            class="size-10 shrink-0 rounded-xl border-slate-200 bg-white text-slate-500"
-            aria-label="Filter"
-          >
-            <Filter class="size-4" />
-          </Button>
-        </div>
-      </CardHeader>
-
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow class="border-slate-100 hover:bg-transparent">
-              <TableHead class="ps-6 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                No
-              </TableHead>
-              <TableHead class="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                NISN
-              </TableHead>
-              <TableHead class="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Nama
-              </TableHead>
-              <TableHead class="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Kelas
-              </TableHead>
-              <TableHead class="text-end pe-6 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Status
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow
-              v-for="(siswa, index) in filteredSiswa"
-              :key="siswa.id"
-              class="border-slate-100 transition-colors hover:bg-slate-50"
+          <div class="flex flex-col">
+            <div
+              v-for="(item, index) in aktivitas"
+              :key="item.id"
+              class="flex items-start gap-3 border-b border-[var(--ui-border)] py-3 last:border-b-0"
             >
-              <TableCell class="ps-6 text-sm text-slate-400">
-                {{ index + 1 }}
-              </TableCell>
-              <TableCell class="font-mono text-sm text-slate-500">
-                {{ siswa.nisn }}
-              </TableCell>
-              <TableCell class="font-medium text-slate-900">
-                {{ siswa.nama }}
-              </TableCell>
-              <TableCell class="text-sm text-slate-500">
-                {{ siswa.kelas }}
-              </TableCell>
-              <TableCell class="pe-6">
-                <div class="flex justify-end">
-                  <Badge
-                    v-if="siswa.status === 'sudah'"
-                    class="rounded-full border-transparent bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600"
-                  >
-                    Sudah Vote
-                  </Badge>
-                  <Badge
-                    v-else
-                    class="rounded-full border-transparent bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-500"
-                  >
-                    Belum Vote
-                  </Badge>
-                </div>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-
-        <div
-          v-if="filteredSiswa.length === 0"
-          class="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 py-10 text-center"
-        >
-          <Search class="mx-auto mb-2 size-6 text-slate-300" />
-          <p class="text-sm font-medium text-slate-500">
-            Tidak ada hasil pencarian
-          </p>
-          <p class="text-xs text-slate-400">
-            Coba kata kunci lain untuk nama atau NISN.
-          </p>
+              <span
+                class="flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-xs font-bold text-white"
+                :class="avatarClass(index)"
+              >
+                {{ initial(item.nama) }}
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm leading-snug text-[var(--ui-text)]">
+                  <span class="font-semibold">{{ item.nama }}</span>
+                  memilih
+                  <span class="font-semibold text-primary-400">
+                    {{ getKandidat('osis', item.osis)?.nama }}
+                  </span>
+                  (OSIS) &amp;
+                  <span class="font-semibold text-primary-400">
+                    {{ getKandidat('mpk', item.mpk)?.nama }}
+                  </span>
+                  (MPK)
+                </p>
+                <p class="mt-0.5 text-xs text-[var(--ui-text-dimmed)]">
+                  {{ item.votedAt ? waktuRelatif(item.votedAt) : '' }}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </UCard>
+
+      <!-- Ringkasan Per Event -->
+      <UCard
+        variant="outline"
+        class="rounded-2xl border-[var(--ui-border)] shadow-[0_4px_24px_rgba(7,26,51,0.4)]"
+      >
+        <div class="flex flex-col gap-6">
+          <div class="flex items-center gap-3">
+            <span class="flex size-10 items-center justify-center rounded-xl bg-[#22C55E]/10 text-[#22C55E]">
+              <UIcon
+                name="i-lucide-activity"
+                class="size-5"
+              />
+            </span>
+            <div>
+              <p class="text-base font-bold text-[var(--ui-text)]">
+                Ringkasan Per Event
+              </p>
+              <p class="text-sm text-[var(--ui-text-dimmed)]">
+                Perkembangan suara masuk tiap pemilihan.
+              </p>
+            </div>
+          </div>
+
+          <div
+            v-for="event in events"
+            :key="event.event"
+            class="flex flex-col gap-2"
+          >
+            <div class="flex items-center justify-between gap-4">
+              <p class="text-sm font-medium text-[var(--ui-text)]">
+                {{ event.label }}
+              </p>
+              <p class="text-xs text-[var(--ui-text-dimmed)]">
+                {{ event.total.toLocaleString('id-ID') }} suara · {{ event.persen }}%
+              </p>
+            </div>
+            <UProgress
+              :model-value="event.persen"
+              size="md"
+              :ui="{
+                indicator: 'rounded-full bg-gradient-to-r from-primary-500 to-primary-400 shadow-[0_0_12px_rgba(22,119,255,0.6)] transition-all duration-500'
+              }"
+            />
+            <p class="text-xs text-[var(--ui-text-dimmed)]">
+              Pemimpin sementara:
+              <span class="font-semibold text-[var(--ui-text)]">{{ event.leader.nama }}</span>
+              · {{ event.leader.jumlahSuara.toLocaleString('id-ID') }} suara
+            </p>
+          </div>
+
+          <NuxtLink
+            to="/quick-count"
+            class="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-400 transition-colors hover:text-primary-300"
+          >
+            Lihat detail perolehan suara
+            <UIcon
+              name="i-lucide-arrow-right"
+              class="size-4"
+            />
+          </NuxtLink>
+        </div>
+      </UCard>
+    </div>
   </div>
 </template>
