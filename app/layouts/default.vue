@@ -12,7 +12,7 @@ const isActive = (item: (typeof mainMenu)[number]) => route.path === item.to
 <template>
   <div class="min-h-screen lg:flex">
     <!-- ===== Sidebar ===== -->
-    <aside class="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col gap-8 border-r border-[var(--ui-border)] bg-[rgba(13,42,74,0.85)] px-5 py-6 backdrop-blur-xl lg:flex">
+    <aside class="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col gap-8 border-r border-[var(--ui-border)] bg-[rgba(255,255,255,0.7)] px-5 py-6 backdrop-blur-xl dark:bg-[rgba(13,42,74,0.85)] lg:flex">
       <!-- Logo -->
       <NuxtLink
         to="/"
@@ -48,7 +48,7 @@ const isActive = (item: (typeof mainMenu)[number]) => route.path === item.to
           :class="[
             isActive(item)
               ? 'bg-primary-500 text-white shadow-[0_0_16px_rgba(22,119,255,0.45)]'
-              : 'text-[var(--ui-text-muted)] hover:bg-white/5 hover:text-[var(--ui-text)]'
+              : 'text-[var(--ui-text-muted)] hover:bg-black/5 hover:text-[var(--ui-text)] dark:hover:bg-white/5'
           ]"
         >
           <UIcon
@@ -68,7 +68,7 @@ const isActive = (item: (typeof mainMenu)[number]) => route.path === item.to
       <div class="flex flex-col gap-3 border-t border-[var(--ui-border)] pt-4">
         <NuxtLink
           to="/"
-          class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--ui-text-muted)] transition-colors hover:bg-white/5 hover:text-[var(--ui-text)]"
+          class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--ui-text-muted)] transition-colors hover:bg-black/5 hover:text-[var(--ui-text)] dark:hover:bg-white/5"
         >
           <UIcon
             name="i-lucide-settings"
@@ -77,7 +77,7 @@ const isActive = (item: (typeof mainMenu)[number]) => route.path === item.to
           Pengaturan
         </NuxtLink>
 
-        <div class="flex items-center gap-3 rounded-2xl border border-[var(--ui-border)] bg-white/[0.04] p-3">
+        <div class="flex items-center gap-3 rounded-2xl border border-[var(--ui-border)] bg-[var(--ui-bg-accented)]/50 p-3 dark:bg-white/[0.04]">
           <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-400 text-sm font-bold text-white">
             RZ
           </span>
@@ -106,7 +106,7 @@ const isActive = (item: (typeof mainMenu)[number]) => route.path === item.to
     <!-- ===== Main Area ===== -->
     <div class="flex min-h-screen flex-1 flex-col lg:pl-72">
       <!-- Top Header Bar -->
-      <header class="sticky top-0 z-30 border-b border-[var(--ui-border)] bg-[rgba(8,21,30,0.75)] backdrop-blur-xl">
+      <header class="sticky top-0 z-30 border-b border-[var(--ui-border)] bg-[rgba(255,255,255,0.8)] backdrop-blur-xl dark:bg-[rgba(8,21,30,0.75)]">
         <div class="flex flex-col gap-4 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-8">
           <div class="flex items-center gap-3">
             <span class="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-400 text-white shadow-[0_4px_16px_rgba(22,119,255,0.35)] lg:hidden">
@@ -135,16 +135,22 @@ const isActive = (item: (typeof mainMenu)[number]) => route.path === item.to
               class="w-full md:w-72"
             />
 
+            <UColorModeButton
+              square
+              aria-label="Ganti tema"
+              class="size-10 rounded-xl border border-[var(--ui-border)] bg-[var(--ui-bg-accented)]/60 text-[var(--ui-text-muted)] transition-colors hover:bg-[var(--ui-bg-accented)] hover:text-[var(--ui-text)] dark:bg-white/5 dark:hover:bg-white/10"
+            />
+
             <button
               type="button"
-              class="relative flex size-10 items-center justify-center rounded-xl border border-[var(--ui-border)] bg-white/5 text-[var(--ui-text-muted)] transition-colors hover:bg-white/10 hover:text-[var(--ui-text)]"
+              class="relative flex size-10 items-center justify-center rounded-xl border border-[var(--ui-border)] bg-[var(--ui-bg-accented)]/60 text-[var(--ui-text-muted)] transition-colors hover:bg-[var(--ui-bg-accented)] hover:text-[var(--ui-text)] dark:bg-white/5 dark:hover:bg-white/10"
               aria-label="Notifikasi"
             >
               <UIcon
                 name="i-lucide-bell"
                 class="size-4"
               />
-              <span class="absolute right-2.5 top-2.5 size-2 rounded-full bg-primary-400 ring-2 ring-[#08151E]" />
+              <span class="absolute right-2.5 top-2.5 size-2 rounded-full bg-primary-400 ring-2 ring-[var(--ui-bg)]" />
             </button>
           </div>
         </div>
@@ -157,7 +163,7 @@ const isActive = (item: (typeof mainMenu)[number]) => route.path === item.to
     </div>
 
     <!-- ===== Mobile Nav ===== -->
-    <nav class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 border-t border-[var(--ui-border)] bg-[rgba(8,21,30,0.9)] px-4 py-2 backdrop-blur-xl lg:hidden">
+    <nav class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 border-t border-[var(--ui-border)] bg-[rgba(255,255,255,0.92)] px-4 py-2 backdrop-blur-xl dark:bg-[rgba(8,21,30,0.9)] lg:hidden">
       <NuxtLink
         v-for="item in mainMenu"
         :key="item.label"
