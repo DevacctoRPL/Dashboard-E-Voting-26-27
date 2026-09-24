@@ -4,97 +4,64 @@
 @import "@nuxt/ui";
 @import "tw-animate-css";
 
-@theme inline {
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-background: var(--background);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+@theme static {
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-inter: 'Inter', sans-serif;
+
+  --color-primary-50: #EAF4FF;
+  --color-primary-100: #D4E8FF;
+  --color-primary-200: #A8D1FF;
+  --color-primary-300: #7DBBFF;
+  --color-primary-400: #5CB8FF;
+  --color-primary-500: #1677FF;
+  --color-primary-600: #0059E0;
+  --color-primary-700: #0049B8;
+  --color-primary-800: #00398F;
+  --color-primary-900: #002A66;
+  --color-primary-950: #001A43;
 }
 
-/* ====== Modern Soft Light Theme (FinPay Style) ====== */
-:root {
-  --radius: 1rem;                      /* Rounded khas modern dashboard */
-  --background: #F8FAFC;              /* Soft Light Gray (Background utama) */
-  --foreground: #0F172A;              /* Slate Gelap (Judul & Teks Utama) */
-  
-  --card: #FFFFFF;                    /* Pure White untuk Card */
-  --card-foreground: #0F172A;         /* Teks Card Hitam/Slate Tegas */
-  
-  --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
-  
-  --primary: #1677FF;                 /* Electric Blue Accent */
-  --primary-foreground: #FFFFFF;
-  
-  --secondary: #F1F5F9;               /* Slate-100 untuk background pill / secondary button */
-  --secondary-foreground: #1E293B;
-  
-  --muted: #F1F5F9;
-  --muted-foreground: #64748B;        /* Slate-500 (Subtitle & Keterangan terpisah jelas) */
-  
-  --accent: #EFF6FF;                  /* Soft Blue tint */
-  --accent-foreground: #1D4ED8;
-  
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
-  
-  --border: #E2E8F0;                  /* Border tipis halus Slate-200 */
-  --input: #E2E8F0;
-  --ring: #1677FF;
-  
-  --chart-1: #1677FF;
-  --chart-2: #38BDF8;
-  --chart-3: #10B981;
-  --chart-4: #F59E0B;
-  --chart-5: #8B5CF6;
-  
-  --sidebar: #FFFFFF;                 /* Sidebar Putih */
-  --sidebar-foreground: #0F172A;
-  --sidebar-primary: #1677FF;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #EFF6FF;
-  --sidebar-accent-foreground: #1D4ED8;
-  --sidebar-border: #E2E8F0;
-  --sidebar-ring: #1677FF;
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
+@layer theme {
+  :root {
+    --ui-radius: 0.5rem;
+    --ui-bg: #F5F7FA;
+    --ui-bg-muted: #EAF1F8;
+    --ui-bg-elevated: #FFFFFF;
+    --ui-bg-accented: #DCE7F2;
+    --ui-bg-inverted: #08151E;
+    --ui-text: #25323C;
+    --ui-text-muted: #55636E;
+    --ui-text-dimmed: #68787E;
+    --ui-text-toned: #42505C;
+    --ui-text-highlighted: #08151E;
+    --ui-text-inverted: #F5F7FA;
+    --ui-primary: #1677FF;
+    --ui-primary-contrast: #FFFFFF;
+    --ui-border: #C3CDD6;
+    --ui-border-muted: #C3CDD6;
+    --ui-border-accented: #A7B4C0;
+    --ui-border-inverted: #08151E;
+    --ui-success: #16A34A;
   }
-  body {
-    @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', sans-serif;
+
+  .dark {
+    --ui-bg: #08151E;
+    --ui-bg-muted: #14212B;
+    --ui-bg-elevated: #0D2A4A;
+    --ui-bg-accented: #1F2B35;
+    --ui-bg-inverted: #F5F7FA;
+    --ui-text: #D7E4F2;
+    --ui-text-muted: #AAB7C4;
+    --ui-text-dimmed: #8B90A0;
+    --ui-text-toned: #C1C6D7;
+    --ui-text-highlighted: #FFFFFF;
+    --ui-text-inverted: #08151E;
+    --ui-primary: #5CB8FF;
+    --ui-primary-contrast: #00275F;
+    --ui-border: #1A365D;
+    --ui-border-muted: #1A365D;
+    --ui-border-accented: #2A3641;
+    --ui-border-inverted: #F5F7FA;
+    --ui-success: #22C55E;
   }
 }
