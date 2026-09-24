@@ -86,7 +86,7 @@ const current = computed(() => {
           :class="[
             active === tab.id
               ? 'bg-primary-500 text-white shadow-[0_0_16px_rgba(22,119,255,0.45)]'
-              : 'text-[var(--ui-text-muted)] hover:text-[var(--ui-text)]'
+              : 'text-white/60 hover:text-white'
           ]"
           @click="active = tab.id"
         >

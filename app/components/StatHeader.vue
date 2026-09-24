@@ -31,7 +31,7 @@ const stats = computed(() => [
     icon: 'i-lucide-users-round',
     iconClass: 'bg-primary-500/10 text-primary-400',
     badge: 'Target partisipasi 100%',
-    badgeClass: 'bg-white/5 text-[var(--ui-text-muted)]',
+    badgeClass: 'bg-[var(--ui-bg-accented)]/60 text-[var(--ui-text-muted)]',
     trendIcon: 'i-lucide-arrow-up-right',
     trendClass: 'text-[var(--ui-text-dimmed)]'
   },
