@@ -89,7 +89,7 @@ const handleExport = () => {
         <h1 class="text-2xl font-bold tracking-tight text-[var(--ui-text)]">
           Data Pemilih
         </h1>
-        <p class="mt-1 text-sm text-[var(--ui-text-muted)]">
+        <p class="mt-1 max-w-prose text-sm text-[var(--ui-text-muted)]">
           Pantau rekap Daftar Pemilih Tetap Pemilihan Ketua OSIS &amp; MPK.
         </p>
       </div>
@@ -109,12 +109,12 @@ const handleExport = () => {
 
     <UCard
       variant="outline"
-      class="rounded-2xl border-[var(--ui-border)] shadow-[0_4px_24px_rgba(7,26,51,0.4)]"
+      class="rounded-2xl border-[var(--ui-border)]"
     >
       <template #header>
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div class="flex items-center gap-3">
-            <span class="flex size-10 items-center justify-center rounded-xl bg-primary-500/10 text-primary-400">
+            <span class="flex size-10 items-center justify-center rounded-xl bg-primary-500/10 text-primary-500 dark:text-primary-400">
               <UIcon
                 name="i-lucide-users-round"
                 class="size-5"
@@ -158,82 +158,151 @@ const handleExport = () => {
           v-for="filter in filters"
           :key="filter.id"
           type="button"
-          class="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all"
+          class="inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors"
           :class="[
             statusFilter === filter.id
-              ? 'bg-primary-500 text-white shadow-[0_0_12px_rgba(22,119,255,0.4)]'
-              : 'border border-[var(--ui-border)] bg-white/[0.03] text-[var(--ui-text-muted)] hover:text-[var(--ui-text)]'
+              ? 'border-primary-500 bg-primary-500 text-white'
+              : 'border-[var(--ui-border)] bg-[var(--ui-bg)] text-[var(--ui-text-muted)] hover:text-[var(--ui-text)]'
           ]"
           @click="statusFilter = filter.id"
         >
           {{ filter.label }}
-          <span class="opacity-70">{{ counts[filter.id] }}</span>
+          <span :class="statusFilter === filter.id ? 'text-white/80' : 'text-[var(--ui-text-dimmed)]'">{{ counts[filter.id] }}</span>
         </button>
       </div>
 
-      <UTable
-        :data="rows"
-        :columns="columns"
-        sticky="header"
+      <!-- Empty state -->
+      <div
+        v-if="rows.length === 0"
+        class="flex flex-col items-center justify-center gap-2 py-12 text-center"
       >
-        <template #osis-cell="{ row }">
-          <CandidatePick :kandidat="getKandidat('osis', row.original.osis)" />
-        </template>
+        <span class="flex size-12 items-center justify-center rounded-full bg-[var(--ui-bg-accented)] text-[var(--ui-text-dimmed)]">
+          <UIcon
+            name="i-lucide-search-x"
+            class="size-6"
+          />
+        </span>
+        <p class="text-sm font-semibold text-[var(--ui-text)]">
+          Tidak ada hasil
+        </p>
+        <p class="max-w-xs text-xs text-[var(--ui-text-dimmed)]">
+          Coba kata kunci lain atau ubah filter status pemilih.
+        </p>
+      </div>
 
-        <template #mpk-cell="{ row }">
-          <CandidatePick :kandidat="getKandidat('mpk', row.original.mpk)" />
-        </template>
-
-        <template #status-cell="{ row }">
-          <div class="flex justify-end">
+      <!-- Mobile: card list -->
+      <ul
+        v-if="rows.length > 0"
+        class="flex flex-col gap-3 md:hidden"
+      >
+        <li
+          v-for="siswa in filteredSiswa"
+          :key="siswa.id"
+          class="flex flex-col gap-3 rounded-xl border border-[var(--ui-border)] bg-[var(--ui-bg)] p-4"
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="truncate text-sm font-semibold text-[var(--ui-text)]">
+                {{ siswa.nama }}
+              </p>
+              <p class="font-inter text-xs text-[var(--ui-text-dimmed)]">
+                {{ siswa.nisn }} · {{ siswa.kelas }}
+              </p>
+            </div>
             <UBadge
-              v-if="row.original.status === 'sudah'"
+              v-if="siswa.status === 'sudah'"
               color="success"
               variant="soft"
               size="sm"
+              class="shrink-0"
             >
-              <template #leading>
-                <UIcon
-                  name="i-lucide-check-circle-2"
-                  class="size-3.5"
-                />
-              </template>
-              Sudah Vote
+              Sudah
             </UBadge>
             <UBadge
               v-else
               color="error"
               variant="soft"
               size="sm"
+              class="shrink-0"
             >
-              <template #leading>
-                <UIcon
-                  name="i-lucide-clock-3"
-                  class="size-3.5"
-                />
-              </template>
-              Belum Vote
+              Belum
             </UBadge>
           </div>
-        </template>
 
-        <template #empty>
-          <div class="flex flex-col items-center justify-center gap-2 py-12 text-center">
-            <span class="flex size-12 items-center justify-center rounded-full bg-white/5 text-[var(--ui-text-dimmed)]">
-              <UIcon
-                name="i-lucide-search-x"
-                class="size-6"
-              />
-            </span>
-            <p class="text-sm font-semibold text-[var(--ui-text)]">
-              Tidak ada hasil pencarian
-            </p>
-            <p class="text-xs text-[var(--ui-text-dimmed)]">
-              Coba kata kunci lain untuk nama atau NISN.
-            </p>
+          <div class="grid grid-cols-2 gap-2 border-t border-[var(--ui-border)] pt-3">
+            <div>
+              <p class="font-inter text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--ui-text-dimmed)]">
+                OSIS
+              </p>
+              <p class="truncate text-xs text-[var(--ui-text-muted)]">
+                {{ pilihanNama('osis', siswa.osis) }}
+              </p>
+            </div>
+            <div>
+              <p class="font-inter text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--ui-text-dimmed)]">
+                MPK
+              </p>
+              <p class="truncate text-xs text-[var(--ui-text-muted)]">
+                {{ pilihanNama('mpk', siswa.mpk) }}
+              </p>
+            </div>
           </div>
-        </template>
-      </UTable>
+        </li>
+      </ul>
+
+      <!-- Desktop: table -->
+      <div
+        v-if="rows.length > 0"
+        class="hidden md:block"
+      >
+        <UTable
+          :data="rows"
+          :columns="columns"
+          sticky="header"
+          class="[&_tbody_tr]:transition-colors [&_tbody_tr:hover]:bg-[var(--ui-bg-accented)]/50"
+        >
+          <template #osis-cell="{ row }">
+            <CandidatePick :kandidat="getKandidat('osis', row.original.osis)" />
+          </template>
+
+          <template #mpk-cell="{ row }">
+            <CandidatePick :kandidat="getKandidat('mpk', row.original.mpk)" />
+          </template>
+
+          <template #status-cell="{ row }">
+            <div class="flex justify-end">
+              <UBadge
+                v-if="row.original.status === 'sudah'"
+                color="success"
+                variant="soft"
+                size="sm"
+              >
+                <template #leading>
+                  <UIcon
+                    name="i-lucide-check-circle-2"
+                    class="size-3.5"
+                  />
+                </template>
+                Sudah Vote
+              </UBadge>
+              <UBadge
+                v-else
+                color="error"
+                variant="soft"
+                size="sm"
+              >
+                <template #leading>
+                  <UIcon
+                    name="i-lucide-clock-3"
+                    class="size-3.5"
+                  />
+                </template>
+                Belum Vote
+              </UBadge>
+            </div>
+          </template>
+        </UTable>
+      </div>
     </UCard>
   </div>
 </template>

@@ -60,7 +60,7 @@ const initial = (nama: string) =>
         <h1 class="text-2xl font-bold tracking-tight text-[var(--ui-text)]">
           Dashboard
         </h1>
-        <p class="mt-1 text-sm text-[var(--ui-text-muted)]">
+        <p class="mt-1 max-w-prose text-sm text-[var(--ui-text-muted)]">
           Rekap pemantauan pemilihan Ketua OSIS &amp; MPK secara langsung.
         </p>
       </div>
@@ -73,14 +73,14 @@ const initial = (nama: string) =>
           icon="i-lucide-users-round"
           class="rounded-xl"
         >
-          Kelola Data Pemilih
+          Data Pemilih
         </UButton>
         <UButton
           to="/quick-count"
           size="lg"
           icon="i-lucide-chart-pie"
           trailing-icon="i-lucide-arrow-right"
-          class="rounded-xl bg-primary-500 text-white shadow-[0_4px_20px_rgba(22,119,255,0.35)] hover:bg-primary-400"
+          class="rounded-xl bg-primary-500 text-white hover:bg-primary-400"
         >
           Lihat Quick Count
         </UButton>
@@ -93,11 +93,11 @@ const initial = (nama: string) =>
       <!-- Aktivitas Vote Terbaru -->
       <UCard
         variant="outline"
-        class="rounded-2xl border-[var(--ui-border)] shadow-[0_4px_24px_rgba(7,26,51,0.4)]"
+        class="rounded-2xl border-[var(--ui-border)]"
       >
         <div class="flex flex-col gap-4">
           <div class="flex items-center gap-3">
-            <span class="flex size-10 items-center justify-center rounded-xl bg-primary-500/10 text-primary-400">
+            <span class="flex size-10 items-center justify-center rounded-xl bg-primary-500/10 text-primary-500 dark:text-primary-400">
               <UIcon
                 name="i-lucide-radio"
                 class="size-5"
@@ -129,11 +129,11 @@ const initial = (nama: string) =>
                 <p class="text-sm leading-snug text-[var(--ui-text)]">
                   <span class="font-semibold">{{ item.nama }}</span>
                   memilih
-                  <span class="font-semibold text-primary-400">
+                  <span class="font-semibold text-primary-500 dark:text-primary-400">
                     {{ getKandidat('osis', item.osis)?.nama }}
                   </span>
                   (OSIS) &amp;
-                  <span class="font-semibold text-primary-400">
+                  <span class="font-semibold text-primary-500 dark:text-primary-400">
                     {{ getKandidat('mpk', item.mpk)?.nama }}
                   </span>
                   (MPK)
@@ -150,11 +150,11 @@ const initial = (nama: string) =>
       <!-- Ringkasan Per Event -->
       <UCard
         variant="outline"
-        class="rounded-2xl border-[var(--ui-border)] shadow-[0_4px_24px_rgba(7,26,51,0.4)]"
+        class="rounded-2xl border-[var(--ui-border)]"
       >
         <div class="flex flex-col gap-6">
           <div class="flex items-center gap-3">
-            <span class="flex size-10 items-center justify-center rounded-xl bg-[#22C55E]/10 text-[#22C55E]">
+            <span class="flex size-10 items-center justify-center rounded-xl bg-[var(--ui-success)]/10 text-[var(--ui-success)]">
               <UIcon
                 name="i-lucide-activity"
                 class="size-5"
@@ -187,7 +187,7 @@ const initial = (nama: string) =>
               :model-value="event.persen"
               size="md"
               :ui="{
-                indicator: 'rounded-full bg-gradient-to-r from-primary-500 to-primary-400 shadow-[0_0_12px_rgba(22,119,255,0.6)] transition-all duration-500'
+                indicator: 'rounded-full bg-gradient-to-r from-primary-500 to-primary-400 transition-all duration-500'
               }"
             />
             <p class="text-xs text-[var(--ui-text-dimmed)]">
@@ -199,7 +199,7 @@ const initial = (nama: string) =>
 
           <NuxtLink
             to="/quick-count"
-            class="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-400 transition-colors hover:text-primary-300"
+            class="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-500 transition-colors hover:text-primary-400 dark:text-primary-400 dark:hover:text-primary-300"
           >
             Lihat detail perolehan suara
             <UIcon

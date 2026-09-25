@@ -1,0 +1,278 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { MOCK_STATS } from '@/utils/mockData'
+
+definePageMeta({ layout: false })
+
+const auth = useAuthStore()
+
+const nis = ref('')
+const password = ref('')
+const showPassword = ref(false)
+const loading = ref(false)
+const error = ref('')
+
+const partisipasi = Math.round((MOCK_STATS.sudahVote / MOCK_STATS.totalSiswa) * 100)
+
+const stats = [
+  { label: 'Total Pemilih', value: MOCK_STATS.totalSiswa, class: 'text-[var(--ui-text)]' },
+  { label: 'Suara Masuk', value: MOCK_STATS.sudahVote, class: 'text-[var(--ui-success)]' },
+  { label: 'Belum Memilih', value: MOCK_STATS.belumVote, class: 'text-primary-500 dark:text-primary-400' }
+]
+
+async function submit() {
+  error.value = ''
+  if (!nis.value.trim() || !password.value) {
+    error.value = 'NIS dan password wajib diisi.'
+    return
+  }
+
+  loading.value = true
+  await new Promise(r => setTimeout(r, 700))
+  if (auth.login(nis.value, password.value)) {
+    await navigateTo('/')
+    return
+  }
+
+  error.value = 'NIS atau password salah. Coba lagi.'
+  loading.value = false
+}
+
+function fieldClass(hasError: boolean) {
+  return [
+    'h-12 w-full rounded-xl border bg-[var(--ui-bg)] px-4 text-sm text-[var(--ui-text)] outline-none transition-all duration-200 placeholder:text-[var(--ui-text-dimmed)] focus:ring-2',
+    hasError
+      ? 'border-rose-500/70 focus:border-rose-500 focus:ring-rose-500/25'
+      : 'border-[var(--ui-border)] focus:border-[var(--ui-primary)] focus:ring-primary-500/25'
+  ]
+}
+</script>
+
+<template>
+  <div class="flex min-h-[100dvh]">
+    <!-- ===== Brand Panel (Desktop) ===== -->
+    <aside
+      class="relative hidden overflow-hidden border-r border-[var(--ui-border)] lg:flex lg:w-[52%] lg:flex-col lg:justify-between"
+    >
+      <div
+        class="pointer-events-none absolute inset-0 bg-[radial-gradient(640px_420px_at_88%_-5%,rgba(22,119,255,0.18),transparent_60%),radial-gradient(520px_420px_at_-8%_112%,rgba(92,184,255,0.12),transparent_60%)]"
+      />
+      <div
+        class="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(22,119,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(22,119,255,0.05)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(ellipse_70%_65%_at_50%_45%,black,transparent)]"
+      />
+
+      <div class="relative flex flex-col justify-between gap-16 p-12 xl:p-16">
+        <!-- Brand -->
+        <div class="flex items-center gap-3">
+          <span
+            class="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-400 text-white shadow-[0_4px_16px_rgba(22,119,255,0.35)]"
+          >
+            <UIcon
+              name="i-lucide-vote"
+              class="size-5"
+            />
+          </span>
+          <div class="leading-tight">
+            <p class="text-sm font-bold tracking-tight text-[var(--ui-text)]">
+              E-Voting Dashboard
+            </p>
+            <p class="text-xs text-[var(--ui-text-dimmed)]">
+              OSIS &amp; MPK 2026/2027
+            </p>
+          </div>
+        </div>
+
+        <!-- Messaging -->
+        <div class="flex flex-col gap-5">
+          <p class="font-inter text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-500 dark:text-primary-400">
+            Pemilihan Digital 2026/2027
+          </p>
+          <h1
+            class="max-w-md text-4xl font-extrabold leading-[1.1] tracking-tight text-[var(--ui-text)] xl:text-5xl"
+          >
+            Suara masuk, terpantau real&nbsp;time.
+          </h1>
+          <p class="max-w-sm text-sm leading-relaxed text-[var(--ui-text-muted)]">
+            Kelola pemilihan Ketua OSIS &amp; Anggota MPK secara transparan, aman, dan tervalidasi.
+          </p>
+        </div>
+
+        <!-- Telemetry -->
+        <div class="flex flex-col gap-6">
+          <div class="flex items-center gap-2">
+            <span class="relative flex size-2">
+              <span class="absolute inline-flex size-full animate-ping rounded-full bg-[var(--ui-success)] opacity-60" />
+              <span class="relative inline-flex size-2 rounded-full bg-[var(--ui-success)]" />
+            </span>
+            <p class="font-inter text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
+              Data Live
+            </p>
+          </div>
+
+          <div class="grid max-w-md grid-cols-3 gap-4">
+            <div
+              v-for="stat in stats"
+              :key="stat.label"
+              class="flex flex-col gap-1 rounded-xl border border-[var(--ui-border)] bg-[var(--ui-bg-elevated)]/70 p-4"
+            >
+              <p
+                class="font-inter text-lg font-bold tracking-tight"
+                :class="stat.class"
+              >
+                {{ stat.value.toLocaleString('id-ID') }}
+              </p>
+              <p class="text-[11px] leading-tight text-[var(--ui-text-dimmed)]">
+                {{ stat.label }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex max-w-md flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <p class="text-xs font-medium text-[var(--ui-text-muted)]">
+                Partisipasi Pemilih
+              </p>
+              <p class="font-inter text-xs font-semibold text-[var(--ui-text)]">
+                {{ partisipasi }}%
+              </p>
+            </div>
+            <UProgress
+              :model-value="partisipasi"
+              size="md"
+              :ui="{
+                indicator: 'rounded-full bg-gradient-to-r from-primary-500 to-primary-400 transition-all duration-500'
+              }"
+            />
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== Form Panel ===== -->
+    <main class="relative flex flex-1 items-center justify-center overflow-y-auto px-4 py-10 sm:px-8">
+      <div class="w-full max-w-md">
+        <!-- Brand (Mobile) -->
+        <div class="mb-8 flex items-center gap-3 lg:hidden">
+          <span
+            class="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-400 text-white shadow-[0_4px_16px_rgba(22,119,255,0.35)]"
+          >
+            <UIcon
+              name="i-lucide-vote"
+              class="size-5"
+            />
+          </span>
+          <div class="leading-tight">
+            <p class="text-sm font-bold tracking-tight text-[var(--ui-text)]">
+              E-Voting Dashboard
+            </p>
+            <p class="text-xs text-[var(--ui-text-dimmed)]">
+              OSIS &amp; MPK 2026/2027
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="rounded-2xl border border-[var(--ui-border)] bg-[var(--ui-bg-elevated)]/80 p-8 shadow-[0_18px_48px_-24px_rgba(7,26,51,0.55)] backdrop-blur-xl sm:p-10"
+        >
+          <div class="mb-8 flex flex-col gap-1.5">
+            <h1 class="text-2xl font-bold tracking-tight text-[var(--ui-text)]">
+              Masuk Dashboard
+            </h1>
+            <p class="text-sm text-[var(--ui-text-muted)]">
+              Gunakan NIS dan password akun panitia.
+            </p>
+          </div>
+
+          <form
+            class="flex flex-col gap-5"
+            novalidate
+            @submit.prevent="submit"
+          >
+            <div class="flex flex-col gap-2">
+              <label
+                for="nis"
+                class="font-inter text-xs font-semibold uppercase tracking-[0.08em] text-[var(--ui-text-muted)]"
+              >
+                NIS
+              </label>
+              <input
+                id="nis"
+                v-model="nis"
+                type="text"
+                inputmode="numeric"
+                autocomplete="username"
+                autofocus
+                placeholder="Masukkan NIS"
+                :aria-invalid="!!error"
+                :class="fieldClass(!!error)"
+                @input="error = ''"
+              >
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label
+                for="password"
+                class="font-inter text-xs font-semibold uppercase tracking-[0.08em] text-[var(--ui-text-muted)]"
+              >
+                Password
+              </label>
+              <div class="relative">
+                <input
+                  id="password"
+                  v-model="password"
+                  :type="showPassword ? 'text' : 'password'"
+                  autocomplete="current-password"
+                  placeholder="Masukkan password"
+                  :aria-invalid="!!error"
+                  :class="[fieldClass(!!error), 'pr-12']"
+                  @input="error = ''"
+                >
+                <button
+                  type="button"
+                  class="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-lg p-2 text-[var(--ui-text-dimmed)] transition-colors hover:bg-[var(--ui-bg-accented)] hover:text-[var(--ui-text)]"
+                  :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'"
+                  @click="showPassword = !showPassword"
+                >
+                  <UIcon
+                    :name="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+                    class="size-5"
+                  />
+                </button>
+              </div>
+            </div>
+
+            <p
+              v-if="error"
+              class="-mt-2 flex items-center gap-1.5 text-sm font-medium text-rose-500 dark:text-rose-400"
+              role="alert"
+              aria-live="polite"
+            >
+              <UIcon
+                name="i-lucide-circle-alert"
+                class="size-4 shrink-0"
+              />
+              {{ error }}
+            </p>
+
+            <UButton
+              type="submit"
+              size="lg"
+              block
+              :loading="loading"
+              class="rounded-xl bg-primary-500 font-inter text-sm font-bold uppercase tracking-[0.08em] text-white hover:bg-primary-400"
+            >
+              Masuk
+            </UButton>
+          </form>
+
+          <p class="mt-8 rounded-xl border border-dashed border-[var(--ui-border)] bg-[var(--ui-bg)]/60 px-4 py-3 text-center text-xs text-[var(--ui-text-dimmed)]">
+            Akun demo · NIS
+            <span class="font-semibold text-[var(--ui-text)]">212006</span>
+            · Password
+            <span class="font-semibold text-[var(--ui-text)]">admin123</span>
+          </p>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>

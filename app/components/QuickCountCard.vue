@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ChartData, ChartOptions, TooltipItem } from 'chart.js'
+import type { ChartData, ChartOptions } from 'chart.js'
 import { Pie } from 'vue-chartjs'
 import type { Kandidat } from '@/utils/mockData'
 
@@ -10,37 +10,10 @@ const props = defineProps<{
   description: string
   icon: string
   data: ChartData<'pie'>
+  options: ChartOptions<'pie'>
   kandidat: Kandidat[]
   total: number
 }>()
-
-const chartOptions: ChartOptions<'pie'> = {
-  responsive: true,
-  maintainAspectRatio: false,
-  resizeDelay: 100,
-  plugins: {
-    legend: {
-      display: false
-    },
-    tooltip: {
-      backgroundColor: '#0D2A4A',
-      titleColor: '#D7E4F2',
-      bodyColor: '#AAB7C4',
-      borderColor: '#1A365D',
-      borderWidth: 1,
-      padding: 12,
-      cornerRadius: 10,
-      displayColors: true,
-      callbacks: {
-        label: (context: TooltipItem<'pie'>) => {
-          const value = context.parsed
-          const label = context.label || ''
-          return ` ${label}: ${value.toLocaleString('id-ID')} suara`
-        }
-      }
-    }
-  }
-}
 
 const formatNumber = (value: number) => value.toLocaleString('id-ID')
 
@@ -62,11 +35,11 @@ const leaderId = computed(() => {
 <template>
   <UCard
     variant="outline"
-    class="rounded-2xl border-[var(--ui-border)] shadow-[0_4px_24px_rgba(7,26,51,0.4)]"
+    class="rounded-2xl border-[var(--ui-border)]"
   >
     <template #header>
       <div class="flex items-center gap-3">
-        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-500/10 text-primary-400">
+        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-500/10 text-primary-500 dark:text-primary-400">
           <UIcon
             :name="icon"
             class="size-5"
@@ -89,11 +62,11 @@ const leaderId = computed(() => {
           <Pie
             :chart-id="chartId"
             :data="data"
-            :options="chartOptions"
+            :options="options"
           />
           <template #fallback>
             <div
-              class="animate-pulse rounded-2xl bg-white/5"
+              class="animate-pulse rounded-2xl bg-[var(--ui-bg-accented)]"
               role="status"
               aria-label="Memuat grafik"
             >
@@ -108,11 +81,11 @@ const leaderId = computed(() => {
         <div
           v-for="item in kandidat"
           :key="item.id"
-          class="flex items-center gap-3 rounded-xl border px-3.5 py-3 transition-all"
+          class="flex items-center gap-3 rounded-xl border px-3.5 py-3 transition-colors"
           :class="[
             item.id === leaderId
-              ? 'border-[#22C55E]/50 bg-[#22C55E]/5 shadow-[0_0_16px_rgba(34,197,94,0.15)]'
-              : 'border-[var(--ui-border)] bg-white/[0.03]'
+              ? 'border-[var(--ui-success)]/50 bg-[var(--ui-success)]/5'
+              : 'border-[var(--ui-border)] bg-[var(--ui-bg)]'
           ]"
         >
           <span
@@ -142,7 +115,7 @@ const leaderId = computed(() => {
             <p class="font-inter text-sm font-bold text-[var(--ui-text)]">
               {{ formatNumber(item.jumlahSuara) }}
             </p>
-            <p class="text-xs font-medium text-primary-400">
+            <p class="text-xs font-medium text-primary-500 dark:text-primary-400">
               {{ persentase(item.jumlahSuara, total) }}%
             </p>
           </div>

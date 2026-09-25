@@ -25,57 +25,86 @@
   :root {
     --ui-radius: 0.5rem;
     --ui-bg: #F5F7FA;
-    --ui-bg-muted: #EAF1F8;
+    --ui-bg-muted: #EDF2F7;
     --ui-bg-elevated: #FFFFFF;
-    --ui-bg-accented: #DCE7F2;
-    --ui-bg-inverted: #08151E;
+    --ui-bg-accented: #E1EAF3;
+    --ui-bg-inverted: #071A33;
     --ui-text: #25323C;
     --ui-text-muted: #55636E;
     --ui-text-dimmed: #68787E;
     --ui-text-toned: #42505C;
-    --ui-text-highlighted: #08151E;
+    --ui-text-highlighted: #071A33;
     --ui-text-inverted: #F5F7FA;
     --ui-primary: #1677FF;
     --ui-primary-contrast: #FFFFFF;
-    --ui-border: #C3CDD6;
-    --ui-border-muted: #C3CDD6;
-    --ui-border-accented: #A7B4C0;
-    --ui-border-inverted: #08151E;
+    --ui-border: #D5DEE8;
+    --ui-border-muted: #E1EAF3;
+    --ui-border-accented: #C3CDD6;
+    --ui-border-inverted: #071A33;
     --ui-success: #16A34A;
+    --ui-error: #DC2626;
   }
 
   .dark {
-    --ui-bg: #08151E;
-    --ui-bg-muted: #14212B;
+    --ui-bg: #071A33;
+    --ui-bg-muted: #0D2A4A;
     --ui-bg-elevated: #0D2A4A;
-    --ui-bg-accented: #1F2B35;
+    --ui-bg-accented: #14212B;
     --ui-bg-inverted: #F5F7FA;
     --ui-text: #D7E4F2;
     --ui-text-muted: #AAB7C4;
     --ui-text-dimmed: #8B90A0;
     --ui-text-toned: #C1C6D7;
     --ui-text-highlighted: #FFFFFF;
-    --ui-text-inverted: #08151E;
+    --ui-text-inverted: #071A33;
     --ui-primary: #5CB8FF;
     --ui-primary-contrast: #00275F;
     --ui-border: #1A365D;
-    --ui-border-muted: #1A365D;
+    --ui-border-muted: #14212B;
     --ui-border-accented: #2A3641;
     --ui-border-inverted: #F5F7FA;
     --ui-success: #22C55E;
+    --ui-error: #FFB4AB;
   }
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: var(--ui-bg);
     background-image:
       radial-gradient(1100px 550px at 85% -10%, rgba(22, 119, 255, 0.16), transparent 60%),
       radial-gradient(900px 500px at -5% 110%, rgba(22, 119, 255, 0.1), transparent 60%);
     background-attachment: fixed;
+    font-variant-numeric: tabular-nums;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ui-primary);
+    outline-offset: 2px;
   }
 
   ::selection {
     background-color: rgba(22, 119, 255, 0.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

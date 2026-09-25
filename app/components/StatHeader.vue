@@ -29,9 +29,9 @@ const stats = computed(() => [
     value: formatNumber(props.totalSiswa),
     sub: 'Daftar Pemilih Tetap',
     icon: 'i-lucide-users-round',
-    iconClass: 'bg-primary-500/10 text-primary-400',
+    iconClass: 'bg-primary-500/10 text-primary-500 dark:text-primary-400',
     badge: 'Target partisipasi 100%',
-    badgeClass: 'bg-[var(--ui-bg-accented)]/60 text-[var(--ui-text-muted)]',
+    badgeClass: 'bg-[var(--ui-bg-accented)] text-[var(--ui-text-muted)]',
     trendIcon: 'i-lucide-arrow-up-right',
     trendClass: 'text-[var(--ui-text-dimmed)]'
   },
@@ -40,22 +40,22 @@ const stats = computed(() => [
     value: formatNumber(props.sudahVote),
     sub: 'Berhasil memberikan suara',
     icon: 'i-lucide-check-circle-2',
-    iconClass: 'bg-[#22C55E]/10 text-[#22C55E]',
+    iconClass: 'bg-[var(--ui-success)]/10 text-[var(--ui-success)]',
     badge: `${persentaseSudah.value}% partisipasi`,
-    badgeClass: 'bg-[#22C55E]/10 text-[#22C55E]',
+    badgeClass: 'bg-[var(--ui-success)]/10 text-[var(--ui-success)]',
     trendIcon: 'i-lucide-arrow-up-right',
-    trendClass: 'text-[#22C55E]'
+    trendClass: 'text-[var(--ui-success)]'
   },
   {
     label: 'Belum Vote',
     value: formatNumber(props.belumVote),
     sub: 'Menunggu konfirmasi',
     icon: 'i-lucide-clock-3',
-    iconClass: 'bg-rose-500/10 text-rose-400',
+    iconClass: 'bg-[var(--ui-error)]/10 text-[var(--ui-error)]',
     badge: `${persentaseBelum.value}% menunggu`,
-    badgeClass: 'bg-rose-500/10 text-rose-400',
+    badgeClass: 'bg-[var(--ui-error)]/10 text-[var(--ui-error)]',
     trendIcon: 'i-lucide-arrow-down-right',
-    trendClass: 'text-rose-400'
+    trendClass: 'text-[var(--ui-error)]'
   }
 ])
 </script>
@@ -66,7 +66,7 @@ const stats = computed(() => [
       v-for="stat in stats"
       :key="stat.label"
       variant="outline"
-      class="rounded-2xl border-[var(--ui-border)] shadow-[0_4px_24px_rgba(7,26,51,0.4)]"
+      class="rounded-2xl border-[var(--ui-border)]"
     >
       <div class="flex flex-col gap-4">
         <div class="flex items-start justify-between">
@@ -109,12 +109,12 @@ const stats = computed(() => [
     <!-- Turnout Progress -->
     <UCard
       variant="outline"
-      class="rounded-2xl border-[var(--ui-border)] shadow-[0_4px_24px_rgba(7,26,51,0.4)] md:col-span-3"
+      class="rounded-2xl border-[var(--ui-border)] md:col-span-3"
     >
       <div class="flex flex-col gap-3">
         <div class="flex items-center justify-between gap-4">
           <div class="flex items-center gap-3">
-            <span class="flex size-10 items-center justify-center rounded-xl bg-primary-500/10 text-primary-400">
+            <span class="flex size-10 items-center justify-center rounded-xl bg-primary-500/10 text-primary-500 dark:text-primary-400">
               <UIcon
                 name="i-lucide-activity"
                 class="size-5"
@@ -129,7 +129,7 @@ const stats = computed(() => [
               </p>
             </div>
           </div>
-          <p class="font-inter text-2xl font-bold tracking-tight text-primary-400">
+          <p class="font-inter text-2xl font-bold tracking-tight text-primary-500 dark:text-primary-400">
             {{ persentaseSudah }}%
           </p>
         </div>
@@ -138,7 +138,7 @@ const stats = computed(() => [
           :model-value="persentaseSudah"
           size="md"
           :ui="{
-            indicator: 'rounded-full bg-gradient-to-r from-primary-500 to-primary-400 shadow-[0_0_12px_rgba(22,119,255,0.6)] transition-all duration-500'
+            indicator: 'rounded-full bg-gradient-to-r from-primary-500 to-primary-400 transition-all duration-500'
           }"
         />
       </div>
