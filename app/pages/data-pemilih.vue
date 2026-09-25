@@ -4,7 +4,6 @@ import { MOCK_SISWA, getKandidat } from '@/utils/mockData'
 import type { Siswa } from '@/utils/mockData'
 import { exportSiswaToExcel } from '@/utils/exportExcel'
 import type { ExportRow } from '@/utils/exportExcel'
-import StatHeader from '@/components/StatHeader.vue'
 
 type StatusFilter = 'semua' | 'sudah' | 'belum'
 
