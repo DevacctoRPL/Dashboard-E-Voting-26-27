@@ -105,8 +105,6 @@ const handleExport = () => {
       </UButton>
     </div>
 
-    <StatHeader />
-
     <UCard
       variant="outline"
       class="rounded-2xl border-[var(--ui-border)]"
