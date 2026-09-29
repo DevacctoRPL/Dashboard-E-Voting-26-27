@@ -28,13 +28,13 @@ async function submit() {
   }
 
   loading.value = true
-  await new Promise(r => setTimeout(r, 700))
-  if (auth.login(nis.value, password.value)) {
+  const err = await auth.login(nis.value, password.value)
+  if (!err) {
     await navigateTo('/')
     return
   }
 
-  error.value = 'NIS atau password salah. Coba lagi.'
+  error.value = err
   loading.value = false
 }
 
@@ -266,10 +266,7 @@ function fieldClass(hasError: boolean) {
           </form>
 
           <p class="mt-8 rounded-xl border border-dashed border-[var(--ui-border)] bg-[var(--ui-bg)]/60 px-4 py-3 text-center text-xs text-[var(--ui-text-dimmed)]">
-            Akun demo · NIS
-            <span class="font-semibold text-[var(--ui-text)]">212006</span>
-            · Password
-            <span class="font-semibold text-[var(--ui-text)]">admin123</span>
+            Akun panitia &amp; siswa dibuat oleh admin. Hubungi admin bila belum bisa masuk.
           </p>
         </div>
       </div>

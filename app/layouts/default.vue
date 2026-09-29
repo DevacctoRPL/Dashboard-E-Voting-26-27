@@ -15,13 +15,14 @@ const pageMeta = computed(() => {
   return match ?? { label: 'Dashboard', desc: 'Ringkasan pemilihan' }
 })
 
-const userName = computed(() => auth.name || 'Rizka Zahra')
+const userName = computed(() => auth.name || 'Pengguna')
+const userRole = computed(() => (auth.role === 'admin' ? 'Administrator' : 'Pemilih'))
 const userInitials = computed(() =>
   userName.value.split(' ').map((p: string) => p[0]).join('').slice(0, 2).toUpperCase()
 )
 
 async function logout() {
-  auth.logout()
+  await auth.logout()
   await navigateTo('/login')
 }
 </script>
@@ -102,7 +103,7 @@ async function logout() {
               {{ userName }}
             </p>
             <p class="truncate text-xs text-[var(--ui-text-dimmed)]">
-              Administrator
+              {{ userRole }}
             </p>
           </div>
           <button

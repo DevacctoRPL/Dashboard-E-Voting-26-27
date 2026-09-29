@@ -1,4 +1,9 @@
-export default defineNuxtPlugin(() => {
-  // Hydrate store dari localStorage sebelum route middleware jalan di client.
-  useAuthStore().hydrate()
+export default defineNuxtPlugin(async () => {
+  const auth = useAuthStore()
+  auth.hydrate()
+
+  // Token di localStorage bisa kedaluwarsa; konfirmasi ke /me sebelum middleware jalan.
+  if (auth.isAuthenticated) {
+    await auth.fetchMe()
+  }
 })
