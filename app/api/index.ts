@@ -23,11 +23,13 @@ export const login = (nis: string, password: string) =>
 
 /** Backend bungkus user di `data` — bukan field datar seperti asumsi lama. */
 export const me = async (): Promise<MeResponse['data']> => {
-  const res = await api<MeResponse>('/me')
+  // `silentAuth`: token basi saat boot itu hal wajar — tanpa toast, middleware
+  // yang putuskan mau lempar ke /login atau tidak.
+  const res = await api<MeResponse>('/me', { silentAuth: true })
   return res.data
 }
 
-export const logout = () => api<MessageResponse>('/logout', { method: 'POST' })
+export const logout = () => api<MessageResponse>('/logout', { method: 'POST', silentAuth: true })
 
 // ===== 2. Admin — dashboard & rekap =====
 

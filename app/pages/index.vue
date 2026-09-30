@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 import { aktivitasVote, dashboard, rekapSuara } from '@/api'
+import { apiErrorMessage, isSessionExpired } from '@/api/client'
 import type { DashboardSummary, JenisPemilihan, RekapJenis } from '@/api/types'
 import StatHeader from '@/components/StatHeader.vue'
 
@@ -9,6 +10,7 @@ const POLLING_MS = 12000
 
 const {
   data: dash,
+  error: dashError,
   refresh: refreshDashboard
 } = await useAsyncData('dashboard', () => dashboard(), { server: false })
 
@@ -24,8 +26,11 @@ const summary = computed<DashboardSummary | null>(() => dash.value?.summary ?? n
 // No websocket di backend (api_spec.md §1) — polling 10–15 detik sesuai spec.
 const inFlight = ref(false)
 
+const auth = useAuthStore()
+
 const refreshAll = async () => {
-  if (inFlight.value) return
+  // Sesi habis = sedang pindah ke /login; stop poll supaya tidak 401 terus.
+  if (inFlight.value || !auth.isAuthenticated) return
   inFlight.value = true
   try {
     await Promise.all([refreshDashboard(), refreshAktivitas()])
@@ -34,7 +39,12 @@ const refreshAll = async () => {
   }
 }
 
-useIntervalFn(refreshAll, POLLING_MS)
+const { pause: pausePolling } = useIntervalFn(refreshAll, POLLING_MS)
+
+// Sesi habis → berhenti poll sepenuhnya, bukan cuma skip per tick.
+watch(() => auth.isAuthenticated, (ok) => {
+  if (!ok) pausePolling()
+})
 
 // Badge "Live" di header hanya nyala di halaman yang benar-benar poll.
 const pollingFlag = useState<boolean>('live-polling', () => false)
@@ -95,6 +105,19 @@ const JENIS_LABEL: Record<JenisPemilihan, string> = { osis: 'OSIS', mpk: 'MPK' }
           Lihat Quick Count
         </UButton>
       </div>
+    </div>
+
+    <!-- Sesi habis: plugin auth sudah mengarahkan ke /login, jadi cukup diam. -->
+    <div
+      v-if="dashError && !isSessionExpired(dashError)"
+      class="flex items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-500/5 px-4 py-3 text-sm text-rose-500 dark:text-rose-400"
+      role="alert"
+    >
+      <UIcon
+        name="i-lucide-circle-alert"
+        class="size-4 shrink-0"
+      />
+      {{ apiErrorMessage(dashError) }}
     </div>
 
     <StatHeader

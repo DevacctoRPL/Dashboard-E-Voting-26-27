@@ -1,47 +1,52 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import type { ChartData, ChartOptions, TooltipItem } from "chart.js";
-import { rekapSuara } from "@/api";
-import type { JenisPemilihan, RekapJenis } from "@/api/types";
-import QuickCountCard from "@/components/QuickCountCard.vue";
+import { computed, ref, watch } from 'vue'
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+import type { ChartData, ChartOptions, TooltipItem } from 'chart.js'
+import { rekapSuara } from '@/api'
+import { apiErrorMessage, isSessionExpired } from '@/api/client'
+import type { JenisPemilihan, RekapJenis } from '@/api/types'
+import QuickCountCard from '@/components/QuickCountCard.vue'
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend)
 
 // Backend tidak mengirim warna kandidat — palet lokal, satu warna per nomor.
-const WARNAPASLON = ["#1677FF", "#22C55E", "#F59E0B", "#A855F7", "#EF4444", "#5CB8FF"];
+const WARNAPASLON = ['#1677FF', '#22C55E', '#F59E0B', '#A855F7', '#EF4444', '#5CB8FF']
 
-const warna = (index: number) => WARNAPASLON[index % WARNAPASLON.length]!;
+const warna = (index: number) => WARNAPASLON[index % WARNAPASLON.length]!
 
-const tabs: { id: JenisPemilihan; label: string; icon: string }[] = [
-  { id: "osis", label: "OSIS", icon: "i-lucide-megaphone" },
-  { id: "mpk", label: "MPK", icon: "i-lucide-landmark" },
-];
+const tabs: { id: JenisPemilihan, label: string, icon: string }[] = [
+  { id: 'osis', label: 'OSIS', icon: 'i-lucide-megaphone' },
+  { id: 'mpk', label: 'MPK', icon: 'i-lucide-landmark' }
+]
 
-const active = ref<JenisPemilihan>("osis");
+const active = ref<JenisPemilihan>('osis')
 
-const colorMode = useColorMode();
-const isDark = computed(() => colorMode.value === "dark");
+const colorMode = useColorMode()
+const isDark = computed(() => colorMode.value === 'dark')
 
+// `server: false` wajib: token ada di localStorage, server tidak punya. Tanpa
+// ini request `rekap-suara` jalan saat SSR tanpa header Authorization → 401,
+// dan error-nya ikut ter-serialize ke payload sehingga banner muncul begitu
+// page di-refresh. Sama seperti index.vue & data-pemilih.vue.
 const { data: rekap, status, error } = await useAsyncData(
-  "rekap-suara",
+  'rekap-suara',
   () => rekapSuara(active.value),
-  { watch: [active] },
-);
+  { watch: [active], server: false }
+)
 
 const current = computed<RekapJenis | null>(() => {
-  const byJenis = rekap.value?.data_by_jenis;
-  return byJenis?.[active.value] ?? byJenis?.osis ?? byJenis?.mpk ?? null;
-});
+  const byJenis = rekap.value?.data_by_jenis
+  return byJenis?.[active.value] ?? byJenis?.osis ?? byJenis?.mpk ?? null
+})
 
 const kandidat = computed(() =>
   (current.value?.detail ?? []).map((item, index) => ({
     ...item,
-    warna: warna(index),
-  })),
-);
+    warna: warna(index)
+  }))
+)
 
-const buildData = (list: typeof kandidat.value): ChartData<"pie"> => ({
+const buildData = (list: typeof kandidat.value): ChartData<'pie'> => ({
   // ponytail: label pre-prefiks ("Paslon 1 - ...") hanya ada di chart.labels;
   // detail[].nama mentah. Pakai chart kalau panjang cocok, fallback ke detail.
   labels: current.value?.chart.labels.length === list.length
@@ -52,44 +57,44 @@ const buildData = (list: typeof kandidat.value): ChartData<"pie"> => ({
       data: current.value?.chart.data.length === list.length
         ? current.value.chart.data
         : list.map(item => item.total),
-      backgroundColor: list.map((item) => item.warna),
-      borderColor: isDark.value ? "#071A33" : "#FFFFFF",
+      backgroundColor: list.map(item => item.warna),
+      borderColor: isDark.value ? '#071A33' : '#FFFFFF',
       borderWidth: 3,
-      hoverOffset: 2,
-    },
-  ],
-});
+      hoverOffset: 2
+    }
+  ]
+})
 
-const chartOptions = computed<ChartOptions<"pie">>(() => ({
+const chartOptions = computed<ChartOptions<'pie'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
   resizeDelay: 100,
   plugins: {
     legend: { display: false },
     tooltip: {
-      backgroundColor: isDark.value ? "#0D2A4A" : "#FFFFFF",
-      titleColor: isDark.value ? "#D7E4F2" : "#071A33",
-      bodyColor: isDark.value ? "#AAB7C4" : "#55636E",
-      borderColor: isDark.value ? "#1A365D" : "#D5DEE8",
+      backgroundColor: isDark.value ? '#0D2A4A' : '#FFFFFF',
+      titleColor: isDark.value ? '#D7E4F2' : '#071A33',
+      bodyColor: isDark.value ? '#AAB7C4' : '#55636E',
+      borderColor: isDark.value ? '#1A365D' : '#D5DEE8',
       borderWidth: 1,
       padding: 12,
       cornerRadius: 10,
       displayColors: true,
       callbacks: {
-        label: (context: TooltipItem<"pie">) =>
-          ` ${context.label || ""}: ${context.parsed.toLocaleString("id-ID")} suara`,
-      },
-    },
-  },
-}));
+        label: (context: TooltipItem<'pie'>) =>
+          ` ${context.label || ''}: ${context.parsed.toLocaleString('id-ID')} suara`
+      }
+    }
+  }
+}))
 
-const isStale = ref(false);
+const isStale = ref(false)
 watch(() => status.value, (value) => {
-  isStale.value = value === "pending";
-});
+  isStale.value = value === 'pending'
+})
 
-const total = computed(() => current.value?.total_suara_masuk ?? 0);
-const leader = computed(() => current.value?.unggul_sementara?.nama ?? null);
+const total = computed(() => current.value?.total_suara_masuk ?? 0)
+const leader = computed(() => current.value?.unggul_sementara?.nama ?? null)
 </script>
 
 <template>
@@ -129,11 +134,14 @@ const leader = computed(() => current.value?.unggul_sementara?.nama ?? null);
           :class="[
             active === tab.id
               ? 'bg-primary-500 text-white'
-              : 'text-[var(--ui-text-muted)] hover:text-[var(--ui-text)]',
+              : 'text-[var(--ui-text-muted)] hover:text-[var(--ui-text)]'
           ]"
           @click="active = tab.id"
         >
-          <UIcon :name="tab.icon" class="size-4" />
+          <UIcon
+            :name="tab.icon"
+            class="size-4"
+          />
           {{ tab.label }}
         </button>
       </div>
@@ -143,21 +151,31 @@ const leader = computed(() => current.value?.unggul_sementara?.nama ?? null);
       v-if="current && current.status !== 'active'"
       class="flex items-center gap-2 rounded-xl border border-dashed border-[var(--ui-border)] bg-[var(--ui-bg)]/60 px-4 py-3 text-sm text-[var(--ui-text-muted)]"
     >
-      <UIcon name="i-lucide-lock" class="size-4 shrink-0" />
+      <UIcon
+        name="i-lucide-lock"
+        class="size-4 shrink-0"
+      />
       Pemilihan ini berstatus <strong>{{ current.status }}</strong> — suara yang masuk
       belum final.
     </div>
 
+    <!-- Sesi habis: plugin auth sudah mengarahkan ke /login, jadi cukup diam. -->
     <div
-      v-if="error"
+      v-if="error && !isSessionExpired(error)"
       class="flex items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-500/5 px-4 py-3 text-sm text-rose-500 dark:text-rose-400"
       role="alert"
     >
-      <UIcon name="i-lucide-circle-alert" class="size-4 shrink-0" />
-      {{ error.message }}
+      <UIcon
+        name="i-lucide-circle-alert"
+        class="size-4 shrink-0"
+      />
+      {{ apiErrorMessage(error) }}
     </div>
 
-    <Transition name="tab-fade" mode="out-in">
+    <Transition
+      name="tab-fade"
+      mode="out-in"
+    >
       <QuickCountCard
         v-if="current"
         :key="active"
