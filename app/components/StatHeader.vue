@@ -1,58 +1,45 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { MOCK_STATS } from '@/utils/mockData'
+import type { DashboardSummary } from '@/api/types'
 
-const props = withDefaults(
-  defineProps<{
-    totalSiswa?: number
-    sudahVote?: number
-    belumVote?: number
-  }>(),
-  {
-    totalSiswa: MOCK_STATS.totalSiswa,
-    sudahVote: MOCK_STATS.sudahVote,
-    belumVote: MOCK_STATS.belumVote
-  }
-)
+const props = defineProps<{
+  summary: DashboardSummary
+}>()
 
 const formatNumber = (value: number) => value.toLocaleString('id-ID')
 
-const persentaseSudah = computed(() =>
-  props.totalSiswa === 0 ? 0 : Number(((props.sudahVote / props.totalSiswa) * 100).toFixed(1))
-)
-
-const persentaseBelum = computed(() => Number((100 - persentaseSudah.value).toFixed(1)))
+const persentaseSudah = computed(() => props.summary.persen_partisipasi ?? 0)
 
 const stats = computed(() => [
   {
     label: 'Total Siswa (DPT)',
-    value: formatNumber(props.totalSiswa),
+    value: formatNumber(props.summary.total_siswa),
     sub: 'Daftar Pemilih Tetap',
     icon: 'i-lucide-users-round',
     iconClass: 'bg-primary-500/10 text-primary-500 dark:text-primary-400',
-    badge: 'Target partisipasi 100%',
+    badge: `${props.summary.total_pemilihan_aktif} pemilihan aktif`,
     badgeClass: 'bg-[var(--ui-bg-accented)] text-[var(--ui-text-muted)]',
-    trendIcon: 'i-lucide-arrow-up-right',
+    trendIcon: 'i-lucide-radio',
     trendClass: 'text-[var(--ui-text-dimmed)]'
   },
   {
     label: 'Sudah Vote',
-    value: formatNumber(props.sudahVote),
+    value: formatNumber(props.summary.sudah_memilih),
     sub: 'Berhasil memberikan suara',
     icon: 'i-lucide-check-circle-2',
     iconClass: 'bg-[var(--ui-success)]/10 text-[var(--ui-success)]',
-    badge: `${persentaseSudah.value}% partisipasi`,
+    badge: `${formatNumber(props.summary.sudah_memilih_semua)} memilih semua`,
     badgeClass: 'bg-[var(--ui-success)]/10 text-[var(--ui-success)]',
     trendIcon: 'i-lucide-arrow-up-right',
     trendClass: 'text-[var(--ui-success)]'
   },
   {
     label: 'Belum Vote',
-    value: formatNumber(props.belumVote),
+    value: formatNumber(props.summary.belum_memilih),
     sub: 'Menunggu konfirmasi',
     icon: 'i-lucide-clock-3',
     iconClass: 'bg-[var(--ui-error)]/10 text-[var(--ui-error)]',
-    badge: `${persentaseBelum.value}% menunggu`,
+    badge: `${formatNumber(props.summary.sudah_memilih_sebagian)} memilih sebagian`,
     badgeClass: 'bg-[var(--ui-error)]/10 text-[var(--ui-error)]',
     trendIcon: 'i-lucide-arrow-down-right',
     trendClass: 'text-[var(--ui-error)]'
@@ -125,7 +112,7 @@ const stats = computed(() => [
                 Partisipasi Pemilih
               </p>
               <p class="text-xs text-[var(--ui-text-dimmed)]">
-                {{ formatNumber(props.sudahVote) }} dari {{ formatNumber(props.totalSiswa) }} siswa telah memilih
+                {{ formatNumber(summary.sudah_memilih) }} dari {{ formatNumber(summary.total_siswa) }} siswa telah memilih
               </p>
             </div>
           </div>

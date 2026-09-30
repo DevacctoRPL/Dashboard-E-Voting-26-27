@@ -2,12 +2,12 @@ import * as XLSX from 'xlsx'
 
 export interface ExportRow {
   'No': number
-  'NISN': string
+  'NIS': string
   'Nama': string
-  'Kelas': string
-  'Pilihan OSIS': string
-  'Pilihan MPK': string
+  'Role': string
   'Status': string
+  'Info Voting': string
+  'Jenis Dipilih': string
 }
 
 export function exportSiswaToExcel(rows: ExportRow[], sheetName = 'Data Pemilih') {
@@ -16,11 +16,11 @@ export function exportSiswaToExcel(rows: ExportRow[], sheetName = 'Data Pemilih'
   worksheet['!cols'] = [
     { wch: 5 },
     { wch: 14 },
+    { wch: 24 },
+    { wch: 10 },
+    { wch: 14 },
     { wch: 22 },
-    { wch: 8 },
-    { wch: 24 },
-    { wch: 24 },
-    { wch: 14 }
+    { wch: 18 }
   ]
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, sheetName)

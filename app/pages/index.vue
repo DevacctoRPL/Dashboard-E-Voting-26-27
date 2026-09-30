@@ -1,55 +1,65 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { MOCK_SISWA, MOCK_STATS, MOCK_VOTE_RESULTS, getKandidat } from '@/utils/mockData'
+import { useIntervalFn } from '@vueuse/core'
+import { aktivitasVote, dashboard, rekapSuara } from '@/api'
+import type { DashboardSummary, JenisPemilihan, RekapJenis } from '@/api/types'
 import StatHeader from '@/components/StatHeader.vue'
 
-const rtf = new Intl.RelativeTimeFormat('id', { numeric: 'auto' })
+const POLLING_MS = 12000
 
-const waktuRelatif = (iso: string) => {
-  const diffMin = Math.round((Date.parse(iso) - Date.now()) / 60000)
-  if (Math.abs(diffMin) < 60) {
-    return rtf.format(diffMin, 'minute')
+const {
+  data: dash,
+  refresh: refreshDashboard
+} = await useAsyncData('dashboard', () => dashboard(), { server: false })
+
+const {
+  data: aktivitas,
+  refresh: refreshAktivitas
+} = await useAsyncData('aktivitas-vote', () => aktivitasVote({ per_page: 10 }), { server: false })
+
+const { data: rekap } = await useAsyncData('rekap-suara', () => rekapSuara(), { server: false })
+
+const summary = computed<DashboardSummary | null>(() => dash.value?.summary ?? null)
+
+// No websocket di backend (api_spec.md §1) — polling 10–15 detik sesuai spec.
+const inFlight = ref(false)
+
+const refreshAll = async () => {
+  if (inFlight.value) return
+  inFlight.value = true
+  try {
+    await Promise.all([refreshDashboard(), refreshAktivitas()])
+  } finally {
+    inFlight.value = false
   }
-  const diffHour = Math.round(diffMin / 60)
-  if (Math.abs(diffHour) < 24) {
-    return rtf.format(diffHour, 'hour')
-  }
-  return rtf.format(Math.round(diffHour / 24), 'day')
 }
 
-const avatarClass = computed(() => {
-  const colors = [
-    'from-primary-500 to-primary-400',
-    'from-[#22C55E] to-[#4ae176]',
-    'from-primary-400 to-[#5CB8FF]'
-  ]
-  return (index: number) => colors[index % colors.length]
+useIntervalFn(refreshAll, POLLING_MS)
+
+// Badge "Live" di header hanya nyala di halaman yang benar-benar poll.
+const pollingFlag = useState<boolean>('live-polling', () => false)
+onMounted(() => {
+  pollingFlag.value = true
+})
+onUnmounted(() => {
+  pollingFlag.value = false
 })
 
-const aktivitas = computed(() =>
-  MOCK_SISWA
-    .filter(s => s.status === 'sudah')
-    .sort((a, b) => Date.parse(b.votedAt ?? '') - Date.parse(a.votedAt ?? ''))
-    .slice(0, 5)
-)
+const events = computed(() => {
+  const byJenis = rekap.value?.data_by_jenis
+  if (!byJenis) return []
+  return (Object.values(byJenis) as RekapJenis[]).map(item => ({
+    jenis: item.jenis,
+    label: item.nama,
+    status: item.status,
+    total: item.total_suara_masuk,
+    leader: item.unggul_sementara?.nama ?? null,
+    leaderPersen: item.unggul_sementara?.persen ?? 0,
+    persen: item.partisipasi.persen_partisipasi
+  }))
+})
 
-const events = computed(() =>
-  (['osis', 'mpk'] as const).map((event) => {
-    const kandidat = MOCK_VOTE_RESULTS[event].kandidat
-    const total = kandidat.reduce((acc, k) => acc + k.jumlahSuara, 0)
-    const leader = kandidat.reduce((max, k) => (k.jumlahSuara > max.jumlahSuara ? k : max))
-    return {
-      event,
-      label: MOCK_VOTE_RESULTS[event].label,
-      total,
-      leader,
-      persen: Math.min(100, Math.round((total / MOCK_STATS.totalSiswa) * 100))
-    }
-  })
-)
-
-const initial = (nama: string) =>
-  nama.split(' ').map(palavra => palavra[0]).join('').slice(0, 2).toUpperCase()
+const JENIS_LABEL: Record<JenisPemilihan, string> = { osis: 'OSIS', mpk: 'MPK' }
 </script>
 
 <template>
@@ -87,7 +97,10 @@ const initial = (nama: string) =>
       </div>
     </div>
 
-    <StatHeader />
+    <StatHeader
+      v-if="summary"
+      :summary="summary"
+    />
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
       <!-- Aktivitas Vote Terbaru -->
@@ -113,35 +126,33 @@ const initial = (nama: string) =>
             </div>
           </div>
 
-          <div class="flex flex-col">
+          <div
+            v-if="!aktivitas?.data?.length"
+            class="rounded-xl border border-dashed border-[var(--ui-border)] bg-[var(--ui-bg)]/60 px-4 py-8 text-center"
+          >
+            <p class="text-sm font-semibold text-[var(--ui-text)]">
+              Belum ada aktivitas
+            </p>
+            <p class="mt-1 text-xs text-[var(--ui-text-dimmed)]">
+              Feed ini terisi otomatis setiap suara masuk.
+            </p>
+          </div>
+
+          <div
+            v-else
+            class="flex flex-col"
+          >
             <div
-              v-for="(item, index) in aktivitas"
-              :key="item.id"
+              v-for="(item, index) in aktivitas.data"
+              :key="index"
               class="flex items-start gap-3 border-b border-[var(--ui-border)] py-3 last:border-b-0"
             >
-              <span
-                class="flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-xs font-bold text-white"
-                :class="avatarClass(index)"
-              >
-                {{ initial(item.nama) }}
+              <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-400 text-xs font-bold text-white">
+                {{ index + 1 }}
               </span>
-              <div class="min-w-0 flex-1">
-                <p class="text-sm leading-snug text-[var(--ui-text)]">
-                  <span class="font-semibold">{{ item.nama }}</span>
-                  memilih
-                  <span class="font-semibold text-primary-500 dark:text-primary-400">
-                    {{ getKandidat('osis', item.osis)?.nama }}
-                  </span>
-                  (OSIS) &amp;
-                  <span class="font-semibold text-primary-500 dark:text-primary-400">
-                    {{ getKandidat('mpk', item.mpk)?.nama }}
-                  </span>
-                  (MPK)
-                </p>
-                <p class="mt-0.5 text-xs text-[var(--ui-text-dimmed)]">
-                  {{ item.votedAt ? waktuRelatif(item.votedAt) : '' }}
-                </p>
-              </div>
+              <p class="min-w-0 flex-1 text-sm leading-snug text-[var(--ui-text)]">
+                {{ item.label ?? 'Suara baru masuk' }}
+              </p>
             </div>
           </div>
         </div>
@@ -171,13 +182,24 @@ const initial = (nama: string) =>
           </div>
 
           <div
+            v-if="!events.length"
+            class="rounded-xl border border-dashed border-[var(--ui-border)] bg-[var(--ui-bg)]/60 px-4 py-8 text-center text-sm text-[var(--ui-text-dimmed)]"
+          >
+            Belum ada pemilihan aktif.
+          </div>
+
+          <div
             v-for="event in events"
-            :key="event.event"
+            :key="event.jenis"
             class="flex flex-col gap-2"
           >
             <div class="flex items-center justify-between gap-4">
               <p class="text-sm font-medium text-[var(--ui-text)]">
                 {{ event.label }}
+                <span
+                  v-if="event.status !== 'active'"
+                  class="ms-1 text-xs text-[var(--ui-text-dimmed)]"
+                >({{ event.status }})</span>
               </p>
               <p class="text-xs text-[var(--ui-text-dimmed)]">
                 {{ event.total.toLocaleString('id-ID') }} suara · {{ event.persen }}%
@@ -191,9 +213,14 @@ const initial = (nama: string) =>
               }"
             />
             <p class="text-xs text-[var(--ui-text-dimmed)]">
-              Pemimpin sementara:
-              <span class="font-semibold text-[var(--ui-text)]">{{ event.leader.nama }}</span>
-              · {{ event.leader.jumlahSuara.toLocaleString('id-ID') }} suara
+              <template v-if="event.leader">
+                Pemimpin sementara:
+                <span class="font-semibold text-[var(--ui-text)]">{{ event.leader }}</span>
+                · {{ event.leaderPersen }}%
+              </template>
+              <template v-else>
+                Belum ada suara untuk {{ JENIS_LABEL[event.jenis] }}.
+              </template>
             </p>
           </div>
 

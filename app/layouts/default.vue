@@ -15,8 +15,19 @@ const pageMeta = computed(() => {
   return match ?? { label: 'Dashboard', desc: 'Ringkasan pemilihan' }
 })
 
+const ROLE_LABEL: Record<string, string> = {
+  admin: 'Administrator',
+  guru: 'Guru',
+  siswa: 'Pemilih'
+}
+
+// Halaman yang poll Opt-in lewat `useState`, jadi badge di header tidak
+// hardcoded "Live" di halaman yang datanya statis.
+const pollingFlag = useState<boolean>('live-polling', () => false)
+const isPolling = computed(() => pollingFlag.value)
+
 const userName = computed(() => auth.name || 'Pengguna')
-const userRole = computed(() => (auth.role === 'admin' ? 'Administrator' : 'Pemilih'))
+const userRole = computed(() => ROLE_LABEL[auth.role] ?? auth.role)
 const userInitials = computed(() =>
   userName.value.split(' ').map((p: string) => p[0]).join('').slice(0, 2).toUpperCase()
 )
@@ -149,11 +160,17 @@ async function logout() {
           <div class="flex shrink-0 items-center gap-3">
             <span class="hidden items-center gap-2 rounded-full border border-[var(--ui-border)] bg-[var(--ui-bg-elevated)] px-3 py-1.5 sm:inline-flex">
               <span class="relative flex size-2">
-                <span class="absolute inline-flex size-full animate-ping rounded-full bg-[var(--ui-success)] opacity-60" />
-                <span class="relative inline-flex size-2 rounded-full bg-[var(--ui-success)]" />
+                <span
+                  v-if="isPolling"
+                  class="absolute inline-flex size-full animate-ping rounded-full bg-[var(--ui-success)] opacity-60"
+                />
+                <span
+                  class="relative inline-flex size-2 rounded-full"
+                  :class="isPolling ? 'bg-[var(--ui-success)]' : 'bg-[var(--ui-text-dimmed)]'"
+                />
               </span>
               <span class="font-inter text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--ui-text-muted)]">
-                Live
+                {{ isPolling ? 'Live' : 'Idle' }}
               </span>
             </span>
 

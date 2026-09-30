@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import type { ChartData, ChartOptions } from 'chart.js'
 import { Pie } from 'vue-chartjs'
-import type { Kandidat } from '@/utils/mockData'
+import type { RekapDetail } from '@/api/types'
 
 const props = defineProps<{
   chartId: string
@@ -11,24 +11,19 @@ const props = defineProps<{
   icon: string
   data: ChartData<'pie'>
   options: ChartOptions<'pie'>
-  kandidat: Kandidat[]
+  kandidat: (RekapDetail & { warna: string })[]
   total: number
+  /** Nama kandidat unggul; `null` saat belum ada suara. */
+  leader: string | null
 }>()
 
 const formatNumber = (value: number) => value.toLocaleString('id-ID')
 
-const persentase = (jumlah: number, total: number) =>
-  total === 0 ? 0 : ((jumlah / total) * 100).toFixed(1)
-
 const leaderId = computed(() => {
-  if (!props.kandidat.length) {
+  if (!props.kandidat.length || props.leader === null) {
     return -1
   }
-  const leader = props.kandidat.reduce<Kandidat | undefined>(
-    (max, item) => (!max || item.jumlahSuara > max.jumlahSuara ? item : max),
-    props.kandidat[0]
-  )
-  return leader?.id ?? -1
+  return props.kandidat.find(item => item.nama === props.leader)?.kandidat_id ?? -1
 })
 </script>
 
@@ -78,12 +73,19 @@ const leaderId = computed(() => {
 
       <!-- Custom Legend -->
       <div class="flex flex-col gap-2.5">
+        <p
+          v-if="leader === null"
+          class="rounded-xl border border-dashed border-[var(--ui-border)] bg-[var(--ui-bg)] px-3.5 py-3 text-center text-xs text-[var(--ui-text-dimmed)]"
+        >
+          Belum ada suara masuk — belum ada kandidat unggul.
+        </p>
+
         <div
           v-for="item in kandidat"
-          :key="item.id"
+          :key="item.kandidat_id"
           class="flex items-center gap-3 rounded-xl border px-3.5 py-3 transition-colors"
           :class="[
-            item.id === leaderId
+            item.kandidat_id === leaderId
               ? 'border-[var(--ui-success)]/50 bg-[var(--ui-success)]/5'
               : 'border-[var(--ui-border)] bg-[var(--ui-bg)]'
           ]"
@@ -99,7 +101,7 @@ const leaderId = computed(() => {
             <p class="flex items-center gap-1.5 truncate text-sm font-semibold text-[var(--ui-text)]">
               {{ item.nama }}
               <UBadge
-                v-if="item.id === leaderId"
+                v-if="item.kandidat_id === leaderId"
                 color="success"
                 variant="soft"
                 size="xs"
@@ -108,15 +110,15 @@ const leaderId = computed(() => {
               </UBadge>
             </p>
             <p class="truncate text-xs text-[var(--ui-text-dimmed)]">
-              {{ item.visi }}
+              Nomor {{ item.nomor }}
             </p>
           </div>
           <div class="text-end">
             <p class="font-inter text-sm font-bold text-[var(--ui-text)]">
-              {{ formatNumber(item.jumlahSuara) }}
+              {{ formatNumber(item.total) }}
             </p>
             <p class="text-xs font-medium text-primary-500 dark:text-primary-400">
-              {{ persentase(item.jumlahSuara, total) }}%
+              {{ item.persen }}%
             </p>
           </div>
         </div>

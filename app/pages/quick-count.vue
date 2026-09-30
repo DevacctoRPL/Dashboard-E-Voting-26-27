@@ -1,43 +1,64 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import type { ChartData, ChartOptions, TooltipItem } from "chart.js";
-import { MOCK_VOTE_RESULTS } from "@/utils/mockData";
-import StatHeader from "@/components/StatHeader.vue";
+import { rekapSuara } from "@/api";
+import type { JenisPemilihan, RekapJenis } from "@/api/types";
 import QuickCountCard from "@/components/QuickCountCard.vue";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-type EventKey = keyof typeof MOCK_VOTE_RESULTS;
+// Backend tidak mengirim warna kandidat — palet lokal, satu warna per nomor.
+const WARNAPASLON = ["#1677FF", "#22C55E", "#F59E0B", "#A855F7", "#EF4444", "#5CB8FF"];
 
-const tabs: { id: EventKey; label: string; icon: string }[] = [
+const warna = (index: number) => WARNAPASLON[index % WARNAPASLON.length]!;
+
+const tabs: { id: JenisPemilihan; label: string; icon: string }[] = [
   { id: "osis", label: "OSIS", icon: "i-lucide-megaphone" },
   { id: "mpk", label: "MPK", icon: "i-lucide-landmark" },
 ];
 
-const active = ref<EventKey>("osis");
+const active = ref<JenisPemilihan>("osis");
 
 const colorMode = useColorMode();
 const isDark = computed(() => colorMode.value === "dark");
 
-const buildData = (
-  kandidat: (typeof MOCK_VOTE_RESULTS)[EventKey]["kandidat"],
-): ChartData<"pie"> => ({
-  labels: kandidat.map((item) => item.nama),
+const { data: rekap, status, error } = await useAsyncData(
+  "rekap-suara",
+  () => rekapSuara(active.value),
+  { watch: [active] },
+);
+
+const current = computed<RekapJenis | null>(() => {
+  const byJenis = rekap.value?.data_by_jenis;
+  return byJenis?.[active.value] ?? byJenis?.osis ?? byJenis?.mpk ?? null;
+});
+
+const kandidat = computed(() =>
+  (current.value?.detail ?? []).map((item, index) => ({
+    ...item,
+    warna: warna(index),
+  })),
+);
+
+const buildData = (list: typeof kandidat.value): ChartData<"pie"> => ({
+  // ponytail: label pre-prefiks ("Paslon 1 - ...") hanya ada di chart.labels;
+  // detail[].nama mentah. Pakai chart kalau panjang cocok, fallback ke detail.
+  labels: current.value?.chart.labels.length === list.length
+    ? current.value.chart.labels
+    : list.map(item => item.nama),
   datasets: [
     {
-      data: kandidat.map((item) => item.jumlahSuara),
-      backgroundColor: kandidat.map((item) => item.warna),
+      data: current.value?.chart.data.length === list.length
+        ? current.value.chart.data
+        : list.map(item => item.total),
+      backgroundColor: list.map((item) => item.warna),
       borderColor: isDark.value ? "#071A33" : "#FFFFFF",
       borderWidth: 3,
       hoverOffset: 2,
     },
   ],
 });
-
-const totalSuara = (
-  kandidat: (typeof MOCK_VOTE_RESULTS)[EventKey]["kandidat"],
-) => kandidat.reduce((acc, item) => acc + item.jumlahSuara, 0);
 
 const chartOptions = computed<ChartOptions<"pie">>(() => ({
   responsive: true,
@@ -62,20 +83,13 @@ const chartOptions = computed<ChartOptions<"pie">>(() => ({
   },
 }));
 
-const current = computed(() => {
-  const event = MOCK_VOTE_RESULTS[active.value];
-  const kandidat = event.kandidat;
-  return {
-    key: active.value,
-    chartId: `${active.value}-chart`,
-    title: event.label,
-    description: event.deskripsi,
-    icon: tabs.find((tab) => tab.id === active.value)!.icon,
-    data: buildData(kandidat),
-    kandidat,
-    total: totalSuara(kandidat),
-  };
+const isStale = ref(false);
+watch(() => status.value, (value) => {
+  isStale.value = value === "pending";
 });
+
+const total = computed(() => current.value?.total_suara_masuk ?? 0);
+const leader = computed(() => current.value?.unggul_sementara?.nama ?? null);
 </script>
 
 <template>
@@ -86,7 +100,7 @@ const current = computed(() => {
         <h1 class="text-2xl font-bold tracking-tight text-[var(--ui-text)]">
           Quick Count Suara
         </h1>
-        <p class="mt-1 max-w-prose text-sm text-[var(--ui-text-muted)]">
+        <p class="max-w-prose text-sm text-[var(--ui-text-muted)]">
           Perolehan suara sementara Pemilihan Ketua OSIS &amp; MPK.
         </p>
       </div>
@@ -101,8 +115,6 @@ const current = computed(() => {
         Data Pemilih
       </UButton>
     </div>
-
-    <StatHeader />
 
     <!-- Segmented Switcher OSIS vs MPK -->
     <div class="flex justify-center">
@@ -127,17 +139,42 @@ const current = computed(() => {
       </div>
     </div>
 
+    <div
+      v-if="current && current.status !== 'active'"
+      class="flex items-center gap-2 rounded-xl border border-dashed border-[var(--ui-border)] bg-[var(--ui-bg)]/60 px-4 py-3 text-sm text-[var(--ui-text-muted)]"
+    >
+      <UIcon name="i-lucide-lock" class="size-4 shrink-0" />
+      Pemilihan ini berstatus <strong>{{ current.status }}</strong> — suara yang masuk
+      belum final.
+    </div>
+
+    <div
+      v-if="error"
+      class="flex items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-500/5 px-4 py-3 text-sm text-rose-500 dark:text-rose-400"
+      role="alert"
+    >
+      <UIcon name="i-lucide-circle-alert" class="size-4 shrink-0" />
+      {{ error.message }}
+    </div>
+
     <Transition name="tab-fade" mode="out-in">
       <QuickCountCard
-        :key="current.key"
-        :chart-id="current.chartId"
-        :title="current.title"
-        :description="current.description"
-        :icon="current.icon"
-        :data="current.data"
+        v-if="current"
+        :key="active"
+        :chart-id="`${active}-chart`"
+        :title="current.nama"
+        :description="`Perolehan suara sementara · ${current.status}`"
+        :icon="tabs.find((tab) => tab.id === active)!.icon"
+        :data="buildData(kandidat)"
         :options="chartOptions"
-        :kandidat="current.kandidat"
-        :total="current.total"
+        :kandidat="kandidat"
+        :total="total"
+        :leader="leader"
+      />
+      <div
+        v-else-if="isStale"
+        key="loading"
+        class="h-96 animate-pulse rounded-2xl bg-[var(--ui-bg-accented)]"
       />
     </Transition>
   </div>

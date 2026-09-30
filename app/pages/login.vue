@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { MOCK_STATS } from '@/utils/mockData'
+import { computed, ref } from 'vue'
+import { dashboard } from '@/api'
+import type { DashboardSummary } from '@/api/types'
 
 definePageMeta({ layout: false })
 
@@ -12,13 +13,21 @@ const showPassword = ref(false)
 const loading = ref(false)
 const error = ref('')
 
-const partisipasi = Math.round((MOCK_STATS.sudahVote / MOCK_STATS.totalSiswa) * 100)
+// Halaman login belum punya token, jadi `/dashboard` akan 401. Ambil diam-diam
+// supaya statistik di panel brand tetap live untuk yang punya sesi valid.
+const { data: dash } = await useAsyncData('login-stats', () => dashboard(), { server: false })
 
-const stats = [
-  { label: 'Total Pemilih', value: MOCK_STATS.totalSiswa, class: 'text-[var(--ui-text)]' },
-  { label: 'Suara Masuk', value: MOCK_STATS.sudahVote, class: 'text-[var(--ui-success)]' },
-  { label: 'Belum Memilih', value: MOCK_STATS.belumVote, class: 'text-primary-500 dark:text-primary-400' }
-]
+const summary = computed<DashboardSummary | null>(() => dash.value?.summary ?? null)
+const partisipasi = computed(() => summary.value?.persen_partisipasi ?? 0)
+
+const stats = computed(() => {
+  const s = summary.value
+  return [
+    { label: 'Total Pemilih', value: s?.total_siswa ?? 0, class: 'text-[var(--ui-text)]' },
+    { label: 'Suara Masuk', value: s?.sudah_memilih ?? 0, class: 'text-[var(--ui-success)]' },
+    { label: 'Belum Memilih', value: s?.belum_memilih ?? 0, class: 'text-primary-500 dark:text-primary-400' }
+  ]
+})
 
 async function submit() {
   error.value = ''
@@ -30,7 +39,8 @@ async function submit() {
   loading.value = true
   const err = await auth.login(nis.value, password.value)
   if (!err) {
-    await navigateTo('/')
+    // Backend yang tentukan tujuan (auth.selesai / redirect_to), bukan tebakan.
+    await navigateTo(auth.redirect_to || '/')
     return
   }
 

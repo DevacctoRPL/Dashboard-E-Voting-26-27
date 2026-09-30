@@ -20,10 +20,8 @@ export default defineNuxtConfig({
     }
   },
 
-  routeRules: {
-    '/': { prerender: true },
-    '/quick-count': { prerender: true }
-  },
+  // ponytail: no routeRules prerender — / dan /quick-count auth-gated,
+  // prerender bakar shell logged-out ke HTML statis.
 
   compatibilityDate: '2026-06-30',
 

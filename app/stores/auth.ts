@@ -1,9 +1,21 @@
 import { defineStore } from '#imports'
 import { apiErrorMessage, clearToken, getToken, setToken } from '@/api/client'
 import { login as apiLogin, logout as apiLogout, me } from '@/api'
-import type { User } from '@/api/types'
+import type { StatusPemilihan, User } from '@/api/types'
 
 const STORAGE_KEY = 'evoting-auth'
+
+const EMPTY_STATUS: StatusPemilihan = {
+  sudah_vote_osis: false,
+  sudah_vote_mpk: false,
+  detail: {
+    osis: { sudah_vote: false, kandidat_id: null, waktu_memilih: null },
+    mpk: { sudah_vote: false, kandidat_id: null, waktu_memilih: null }
+  },
+  sudah_selesai_voting: false,
+  selesai: false,
+  redirect_to: null
+}
 
 interface AuthState {
   id: number | null
@@ -11,12 +23,24 @@ interface AuthState {
   name: string
   role: string
   isAuthenticated: boolean
+  status_pemilihan: StatusPemilihan
+  selesai: boolean
+  redirect_to: string | null
 }
 
-const EMPTY: AuthState = { id: null, nis: '', name: '', role: '', isAuthenticated: false }
+const EMPTY: AuthState = {
+  id: null,
+  nis: '',
+  name: '',
+  role: '',
+  isAuthenticated: false,
+  status_pemilihan: { ...EMPTY_STATUS },
+  selesai: false,
+  redirect_to: null
+}
 
 export const useAuthStore = defineStore('auth', {
-  state: (): AuthState => ({ ...EMPTY }),
+  state: (): AuthState => ({ ...EMPTY, status_pemilihan: { ...EMPTY_STATUS } }),
   getters: {
     isAdmin: state => state.role === 'admin'
   },
@@ -39,21 +63,28 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this.$state))
       }
     },
+    patchUser(user: User, status: StatusPemilihan, selesai: boolean, redirectTo: string | null) {
+      this.$patch({
+        id: user.id,
+        nis: user.nis,
+        name: user.nama,
+        role: user.role,
+        isAuthenticated: true,
+        status_pemilihan: status,
+        selesai,
+        redirect_to: redirectTo
+      })
+      this.persist()
+    },
     /**
      * @returns pesan error, atau null kalau sukses.
      */
     async login(nis: string, password: string): Promise<string | null> {
       try {
         const res = await apiLogin(nis.trim(), password)
-        setToken(res.token)
-        this.$patch({
-          id: res.user.id,
-          nis: res.user.nis,
-          name: res.user.nama,
-          role: res.user.role,
-          isAuthenticated: true
-        })
-        this.persist()
+        const { user, token, status_pemilihan, selesai, redirect_to } = res.data
+        setToken(token)
+        this.patchUser(user, status_pemilihan, selesai, redirect_to)
         return null
       } catch (err) {
         return apiErrorMessage(err)
@@ -63,15 +94,8 @@ export const useAuthStore = defineStore('auth', {
     async fetchMe(): Promise<boolean> {
       if (!getToken()) return false
       try {
-        const user: User = await me()
-        this.$patch({
-          id: user.id,
-          nis: user.nis,
-          name: user.nama,
-          role: user.role,
-          isAuthenticated: true
-        })
-        this.persist()
+        const { user, status_pemilihan, selesai, redirect_to } = await me()
+        this.patchUser(user, status_pemilihan, selesai, redirect_to)
         return true
       } catch {
         this.clear()
@@ -87,7 +111,7 @@ export const useAuthStore = defineStore('auth', {
       this.clear()
     },
     clear() {
-      this.$patch({ ...EMPTY })
+      this.$patch({ ...EMPTY, status_pemilihan: { ...EMPTY_STATUS } })
       clearToken()
       if (import.meta.client) {
         localStorage.removeItem(STORAGE_KEY)
