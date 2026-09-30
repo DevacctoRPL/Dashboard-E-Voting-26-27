@@ -25,17 +25,19 @@ const redirectTo = computed(() => {
 
 // Halaman login belum punya token, jadi `/dashboard` akan 401. Ambil diam-diam
 // supaya statistik di panel brand tetap live untuk yang punya sesi valid.
-const { data: dash } = await useAsyncData('login-stats', () => dashboard(), { server: false })
+// ponytail: lazy — jangan block form login, 401 di sini normal.
+const { data: dash } = await useAsyncData('login-stats', () => dashboard(), { server: false, lazy: true, dedupe: 'defer' })
 
 const summary = computed<DashboardSummary | null>(() => dash.value?.summary ?? null)
 const partisipasi = computed(() => summary.value?.persen_partisipasi ?? 0)
 
 const stats = computed(() => {
   const s = summary.value
+  const fmt = (n: number) => n.toLocaleString('id-ID')
   return [
-    { label: 'Total Pemilih', value: s?.total_siswa ?? 0, class: 'text-[var(--ui-text)]' },
-    { label: 'Suara Masuk', value: s?.sudah_memilih ?? 0, class: 'text-[var(--ui-success)]' },
-    { label: 'Belum Memilih', value: s?.belum_memilih ?? 0, class: 'text-primary-500 dark:text-primary-400' }
+    { label: 'Total Pemilih', value: fmt(s?.total_siswa ?? 0), class: 'text-[var(--ui-text)]' },
+    { label: 'Suara Masuk', value: fmt(s?.sudah_memilih ?? 0), class: 'text-[var(--ui-success)]' },
+    { label: 'Belum Memilih', value: fmt(s?.belum_memilih ?? 0), class: 'text-primary-500 dark:text-primary-400' }
   ]
 })
 
@@ -141,7 +143,7 @@ function fieldClass(hasError: boolean) {
                 class="font-inter text-lg font-bold tracking-tight"
                 :class="stat.class"
               >
-                {{ stat.value.toLocaleString('id-ID') }}
+                {{ stat.value }}
               </p>
               <p class="text-[11px] leading-tight text-[var(--ui-text-dimmed)]">
                 {{ stat.label }}

@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import type { ChartData, ChartOptions, TooltipItem } from 'chart.js'
 import { rekapSuara } from '@/api'
 import { apiErrorMessage, isSessionExpired } from '@/api/client'
 import type { JenisPemilihan, RekapJenis } from '@/api/types'
-import QuickCountCard from '@/components/QuickCountCard.vue'
 
-ChartJS.register(ArcElement, Tooltip, Legend)
+// ponytail: chart ~200KB lazy — hanya di-load saat buka /quick-count.
+const QuickCountCard = defineAsyncComponent(() => import('@/components/QuickCountCard.vue'))
 
 // Backend tidak mengirim warna kandidat — palet lokal, satu warna per nomor.
 const WARNAPASLON = ['#1677FF', '#22C55E', '#F59E0B', '#A855F7', '#EF4444', '#5CB8FF']
@@ -29,9 +28,9 @@ const isDark = computed(() => colorMode.value === 'dark')
 // dan error-nya ikut ter-serialize ke payload sehingga banner muncul begitu
 // page di-refresh. Sama seperti index.vue & data-pemilih.vue.
 const { data: rekap, status, error } = await useAsyncData(
-  'rekap-suara',
+  'rekap-suara-qc',
   () => rekapSuara(active.value),
-  { watch: [active], server: false }
+  { watch: [active], server: false, lazy: true, dedupe: 'defer' }
 )
 
 const current = computed<RekapJenis | null>(() => {
@@ -46,23 +45,27 @@ const kandidat = computed(() =>
   }))
 )
 
-const buildData = (list: typeof kandidat.value): ChartData<'pie'> => ({
-  // ponytail: label pre-prefiks ("Paslon 1 - ...") hanya ada di chart.labels;
-  // detail[].nama mentah. Pakai chart kalau panjang cocok, fallback ke detail.
-  labels: current.value?.chart.labels.length === list.length
-    ? current.value.chart.labels
-    : list.map(item => item.nama),
-  datasets: [
-    {
-      data: current.value?.chart.data.length === list.length
-        ? current.value.chart.data
-        : list.map(item => item.total),
-      backgroundColor: list.map(item => item.warna),
-      borderColor: isDark.value ? '#071A33' : '#FFFFFF',
-      borderWidth: 3,
-      hoverOffset: 2
-    }
-  ]
+// ponytail: label pre-prefiks ("Paslon 1 - ...") hanya ada di chart.labels;
+// detail[].nama mentah. Pakai chart kalau panjang cocok, fallback ke detail.
+// computed — bukan call di template, biar Chart.js tak destroy/recreate tiap render.
+const chartData = computed<ChartData<'pie'>>(() => {
+  const list = kandidat.value
+  return {
+    labels: current.value?.chart.labels.length === list.length
+      ? current.value.chart.labels
+      : list.map(item => item.nama),
+    datasets: [
+      {
+        data: current.value?.chart.data.length === list.length
+          ? current.value.chart.data
+          : list.map(item => item.total),
+        backgroundColor: list.map(item => item.warna),
+        borderColor: isDark.value ? '#071A33' : '#FFFFFF',
+        borderWidth: 3,
+        hoverOffset: 2
+      }
+    ]
+  }
 })
 
 const chartOptions = computed<ChartOptions<'pie'>>(() => ({
@@ -88,10 +91,7 @@ const chartOptions = computed<ChartOptions<'pie'>>(() => ({
   }
 }))
 
-const isStale = ref(false)
-watch(() => status.value, (value) => {
-  isStale.value = value === 'pending'
-})
+const isStale = computed(() => status.value === 'pending')
 
 const total = computed(() => current.value?.total_suara_masuk ?? 0)
 const leader = computed(() => current.value?.unggul_sementara?.nama ?? null)
@@ -183,7 +183,7 @@ const leader = computed(() => current.value?.unggul_sementara?.nama ?? null)
         :title="current.nama"
         :description="`Perolehan suara sementara · ${current.status}`"
         :icon="tabs.find((tab) => tab.id === active)!.icon"
-        :data="buildData(kandidat)"
+        :data="chartData"
         :options="chartOptions"
         :kandidat="kandidat"
         :total="total"

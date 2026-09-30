@@ -1,8 +1,17 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 import type { ChartData, ChartOptions } from 'chart.js'
-import { Pie } from 'vue-chartjs'
 import type { RekapDetail } from '@/api/types'
+
+// ponytail: chart.js + vue-chartjs lazy — register Arc/Tooltip/Legend saat card dibuka saja.
+const Pie = defineAsyncComponent(async () => {
+  const [{ Chart, ArcElement, Tooltip, Legend }, { Pie: PieComp }] = await Promise.all([
+    import('chart.js'),
+    import('vue-chartjs')
+  ])
+  Chart.register(ArcElement, Tooltip, Legend)
+  return PieComp as unknown as import('vue').Component
+})
 
 const props = defineProps<{
   chartId: string

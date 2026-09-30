@@ -12,14 +12,14 @@ const {
   data: dash,
   error: dashError,
   refresh: refreshDashboard
-} = await useAsyncData('dashboard', () => dashboard(), { server: false })
+} = await useAsyncData('dashboard', () => dashboard(), { server: false, lazy: true, dedupe: 'defer' })
 
 const {
   data: aktivitas,
   refresh: refreshAktivitas
-} = await useAsyncData('aktivitas-vote', () => aktivitasVote({ per_page: 10 }), { server: false })
+} = await useAsyncData('aktivitas-vote', () => aktivitasVote({ per_page: 10 }), { server: false, lazy: true, dedupe: 'defer' })
 
-const { data: rekap } = await useAsyncData('rekap-suara', () => rekapSuara(), { server: false })
+const { data: rekap, refresh: refreshRekap } = await useAsyncData('rekap-suara-dash', () => rekapSuara(), { server: false, lazy: true, dedupe: 'defer' })
 
 const summary = computed<DashboardSummary | null>(() => dash.value?.summary ?? null)
 
@@ -30,20 +30,22 @@ const auth = useAuthStore()
 
 const refreshAll = async () => {
   // Sesi habis = sedang pindah ke /login; stop poll supaya tidak 401 terus.
-  if (inFlight.value || !auth.isAuthenticated) return
+  // Tab hidden = skip, hemat baterai/API.
+  if (inFlight.value || !auth.isAuthenticated || document.visibilityState !== 'visible') return
   inFlight.value = true
   try {
-    await Promise.all([refreshDashboard(), refreshAktivitas()])
+    await Promise.all([refreshDashboard(), refreshAktivitas(), refreshRekap()])
   } finally {
     inFlight.value = false
   }
 }
 
-const { pause: pausePolling } = useIntervalFn(refreshAll, POLLING_MS)
+const { pause: pausePolling, resume: resumePolling } = useIntervalFn(refreshAll, POLLING_MS, { immediate: false })
 
-// Sesi habis → berhenti poll sepenuhnya, bukan cuma skip per tick.
+// Sesi habis → berhenti poll sepenuhnya, login lagi → jalan lagi.
 watch(() => auth.isAuthenticated, (ok) => {
-  if (!ok) pausePolling()
+  if (ok) resumePolling()
+  else pausePolling()
 })
 
 // Badge "Live" di header hanya nyala di halaman yang benar-benar poll.
@@ -63,6 +65,7 @@ const events = computed(() => {
     label: item.nama,
     status: item.status,
     total: item.total_suara_masuk,
+    totalLabel: item.total_suara_masuk.toLocaleString('id-ID'),
     leader: item.unggul_sementara?.nama ?? null,
     leaderPersen: item.unggul_sementara?.persen ?? 0,
     persen: item.partisipasi.persen_partisipasi
@@ -167,7 +170,7 @@ const JENIS_LABEL: Record<JenisPemilihan, string> = { osis: 'OSIS', mpk: 'MPK' }
           >
             <div
               v-for="(item, index) in aktivitas.data"
-              :key="index"
+              :key="item.label ?? index"
               class="flex items-start gap-3 border-b border-[var(--ui-border)] py-3 last:border-b-0"
             >
               <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-400 text-xs font-bold text-white">
@@ -225,7 +228,7 @@ const JENIS_LABEL: Record<JenisPemilihan, string> = { osis: 'OSIS', mpk: 'MPK' }
                 >({{ event.status }})</span>
               </p>
               <p class="text-xs text-[var(--ui-text-dimmed)]">
-                {{ event.total.toLocaleString('id-ID') }} suara · {{ event.persen }}%
+                {{ event.totalLabel }} suara · {{ event.persen }}%
               </p>
             </div>
             <UProgress

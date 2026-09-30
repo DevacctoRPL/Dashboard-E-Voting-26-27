@@ -1,5 +1,4 @@
-import * as XLSX from 'xlsx'
-
+// ponytail: dynamic import — xlsx ~800KB, hanya saat klik Export.
 export interface ExportRow {
   'No': number
   'NIS': string
@@ -10,7 +9,8 @@ export interface ExportRow {
   'Jenis Dipilih': string
 }
 
-export function exportSiswaToExcel(rows: ExportRow[], sheetName = 'Data Pemilih') {
+export async function exportSiswaToExcel(rows: ExportRow[], sheetName = 'Data Pemilih') {
+  const XLSX = await import('xlsx')
   const timestamp = new Date().toISOString().slice(0, 10)
   const worksheet = XLSX.utils.json_to_sheet(rows)
   worksheet['!cols'] = [

@@ -108,10 +108,13 @@ export function api<T>(
   const bearer = getToken()
   const params = cleanQuery(query)
 
+  // ponytail: timeout+retry 1x — polling/export tak numpuk saat net lambat.
   return $fetch<T>(`${config.apiBase}${path}`, {
     method,
     ...(body !== undefined && { body }),
     ...(params && { query: params }),
+    timeout: 10000,
+    retry: 1,
     headers: {
       Accept: 'application/json',
       ...(bearer && { Authorization: `Bearer ${bearer}` })

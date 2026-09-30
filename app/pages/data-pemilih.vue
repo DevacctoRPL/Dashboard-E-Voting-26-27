@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
+import { refDebounced } from '@vueuse/core'
 import { apiErrorMessage, isSessionExpired } from '@/api/client'
 import { dashboard } from '@/api'
 import type { DashboardParams, Pemilih } from '@/api/types'
@@ -27,8 +28,10 @@ const jenisFilters: { id: JenisFilter, label: string }[] = [
   { id: 'mpk', label: 'MPK' }
 ]
 
+// ponytail: search debounce 400ms — tiap ketik tak tembak API.
+const debouncedSearch = refDebounced(searchQuery, 400)
 const params = computed<DashboardParams>(() => ({
-  search: searchQuery.value.trim(),
+  search: debouncedSearch.value.trim(),
   status: statusFilter.value === 'semua' ? undefined : statusFilter.value,
   jenis: jenisFilter.value,
   per_page: perPage.value,
@@ -38,12 +41,12 @@ const params = computed<DashboardParams>(() => ({
 const { data, status, error } = await useAsyncData(
   'data-pemilih',
   () => dashboard(params.value),
-  { server: false, watch: [params] }
+  { server: false, lazy: true, dedupe: 'defer', watch: [params] }
 )
 
 // Server memfilter; hasil tiap ubah filter harus balik ke halaman 1.
-watch([searchQuery, statusFilter, jenisFilter], () => {
-  page.value = 1
+watch([debouncedSearch, statusFilter, jenisFilter, perPage], () => {
+  if (page.value !== 1) page.value = 1
 })
 
 const summary = computed(() => data.value?.summary ?? null)
@@ -105,7 +108,7 @@ const handleExport = async () => {
       'Jenis Dipilih': votedJenis(item) || '-'
     }))
 
-    exportSiswaToExcel(data)
+    await exportSiswaToExcel(data)
   } catch (err) {
     exportError.value = apiErrorMessage(err)
   } finally {
