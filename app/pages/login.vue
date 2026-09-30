@@ -6,12 +6,22 @@ import type { DashboardSummary } from '@/api/types'
 definePageMeta({ layout: false })
 
 const auth = useAuthStore()
+const route = useRoute()
 
 const nis = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const loading = ref(false)
 const error = ref('')
+
+/** Banner "sesi berakhir" — dipasang plugin auth saat 401, hilang saat reload. */
+const sessionExpired = useState<boolean>('session-expired', () => false)
+
+/** Halaman yang dibuka user sebelum token-nya mati; dipakai setelah login. */
+const redirectTo = computed(() => {
+  const target = route.query.redirect
+  return typeof target === 'string' && target.startsWith('/') ? target : ''
+})
 
 // Halaman login belum punya token, jadi `/dashboard` akan 401. Ambil diam-diam
 // supaya statistik di panel brand tetap live untuk yang punya sesi valid.
@@ -39,8 +49,10 @@ async function submit() {
   loading.value = true
   const err = await auth.login(nis.value, password.value)
   if (!err) {
-    // Backend yang tentukan tujuan (auth.selesai / redirect_to), bukan tebakan.
-    await navigateTo(auth.redirect_to || '/')
+    sessionExpired.value = false
+    // `redirect_to` backend menang (mis. siswa yang voting-nya sudah selesai).
+    // Kalau tidak ada, baru pakai halaman asal yang tersimpan dari 401.
+    await navigateTo(auth.redirect_to || redirectTo.value || '/', { replace: true })
     return
   }
 
@@ -192,6 +204,23 @@ function fieldClass(hasError: boolean) {
               Gunakan NIS dan password akun panitia.
             </p>
           </div>
+
+          <p
+            v-if="sessionExpired"
+            class="mb-6 flex items-start gap-2 rounded-xl border border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm text-amber-600 dark:text-amber-400"
+            role="status"
+          >
+            <UIcon
+              name="i-lucide-clock-alert"
+              class="mt-0.5 size-4 shrink-0"
+            />
+            <span>
+              Sesi kamu sudah berakhir. Silakan masuk kembali
+              <template v-if="redirectTo">
+                untuk melanjutkan ke halaman tadi.
+              </template>
+            </span>
+          </p>
 
           <form
             class="flex flex-col gap-5"

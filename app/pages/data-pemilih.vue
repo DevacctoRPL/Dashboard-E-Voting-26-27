@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { apiErrorMessage } from '@/api/client'
+import { apiErrorMessage, isSessionExpired } from '@/api/client'
 import { dashboard } from '@/api'
 import type { DashboardParams, Pemilih } from '@/api/types'
 import { exportSiswaToExcel } from '@/utils/exportExcel'
@@ -232,12 +232,12 @@ const handleExport = async () => {
       </p>
 
       <div
-        v-if="error"
+        v-if="error && !isSessionExpired(error)"
         class="flex items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-500/5 px-4 py-3 text-sm text-rose-500 dark:text-rose-400"
         role="alert"
       >
         <UIcon name="i-lucide-circle-alert" class="size-4 shrink-0" />
-        {{ error.message }}
+        {{ apiErrorMessage(error) }}
       </div>
 
       <!-- Empty state -->

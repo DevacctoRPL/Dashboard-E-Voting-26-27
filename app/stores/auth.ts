@@ -1,5 +1,5 @@
 import { defineStore } from '#imports'
-import { apiErrorMessage, clearToken, getToken, setToken } from '@/api/client'
+import { apiErrorMessage, clearToken, getToken, isSessionExpired, markSessionExpired, setToken } from '@/api/client'
 import { login as apiLogin, logout as apiLogout, me } from '@/api'
 import type { StatusPemilihan, User } from '@/api/types'
 
@@ -97,8 +97,17 @@ export const useAuthStore = defineStore('auth', {
         const { user, status_pemilihan, selesai, redirect_to } = await me()
         this.patchUser(user, status_pemilihan, selesai, redirect_to)
         return true
-      } catch {
-        this.clear()
+      } catch (err) {
+        // Token ditolak server saat boot: paksa logout agar middleware
+        // melempar ke /login, dan tandai supaya banner "sesi berakhir" muncul.
+        if (isSessionExpired(err)) {
+          this.clear()
+          markSessionExpired()
+        } else {
+          // Error lain = offline/server mati. Login lokal dibiarkan supaya
+          // middleware tetap yang memutuskan, bukan diasumsikan session rusak.
+          this.clear()
+        }
         return false
       }
     },
@@ -106,7 +115,8 @@ export const useAuthStore = defineStore('auth', {
       try {
         await apiLogout()
       } catch {
-        // Token sudah tidak valid di server — abaikan, tetap bersihkan lokal.
+        // Token sudah tidak valid di server / server mati — abaikan, tetap
+        // bersihkan lokal. `silentAuth` mencegah 401 memicu toast sesi habis.
       }
       this.clear()
     },
