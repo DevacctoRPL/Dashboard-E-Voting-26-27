@@ -5,6 +5,9 @@ import type { StatusPemilihan, User } from '@/api/types'
 
 const STORAGE_KEY = 'evoting-auth'
 
+/** Sama dengan yang di-hardcode `OnlyAdmin` backend — satu sumber kebenaran. */
+const ADMIN_ROLE = 'admin'
+
 const EMPTY_STATUS: StatusPemilihan = {
   sudah_vote_osis: false,
   sudah_vote_mpk: false,
@@ -42,7 +45,7 @@ const EMPTY: AuthState = {
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({ ...EMPTY, status_pemilihan: { ...EMPTY_STATUS } }),
   getters: {
-    isAdmin: state => state.role === 'admin'
+    isAdmin: state => state.role === ADMIN_ROLE
   },
   actions: {
     hydrate() {
@@ -83,6 +86,23 @@ export const useAuthStore = defineStore('auth', {
       try {
         const res = await apiLogin(nis.trim(), password)
         const { user, token, status_pemilihan, selesai, redirect_to } = res.data
+
+        // Halaman ini khusus panitia. Backend masih menerbitkan token untuk
+        // semua role, jadi token role non-admin harus dicabut di server sebelum
+        // dibuang — kalau tidak, token valid akan menggantung di sana. `setToken`
+        // dulu supaya `apiLogout` punya bearer, lalu `clear()` supaya tidak
+        // pernah sampai ke localStorage/persist().
+        if (user.role !== ADMIN_ROLE) {
+          setToken(token)
+          try {
+            await apiLogout()
+          } catch {
+            // Server mati atau token sudah dicabut — abaikan, tetap tolak lokal.
+          }
+          this.clear()
+          return 'Dashboard ini khusus akun admin (panitia).'
+        }
+
         setToken(token)
         this.patchUser(user, status_pemilihan, selesai, redirect_to)
         return null

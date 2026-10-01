@@ -16,12 +16,20 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       // Backend Laravel E-Voting. Override: NUXT_PUBLIC_API_BASE=http://host:port/api
-      apiBase: 'http://127.0.0.1:8000/api'
+      apiBase: 'https://be-e-voting-osem.smkpluspnb.sch.id/api'
     }
   },
 
-  // ponytail: no routeRules prerender — / dan /quick-count auth-gated,
-  // prerender bakar shell logged-out ke HTML statis.
+  // Semua halaman auth-gated, dan `auth.global.ts` keluar lebih dulu di server
+  // (`import.meta.server`). Tanpa ini, hard-refresh `/` tetap SSR-render
+  // kerangka dashboard dan mengirimkannya ke siapa pun yang belum login sebelum
+  // middleware sempat menendang ke /login.
+  routeRules: {
+    '/': { ssr: false },
+    '/data-pemilih': { ssr: false },
+    '/quick-count': { ssr: false },
+    '/login': { ssr: false }
+  },
 
   compatibilityDate: '2026-06-30',
 
