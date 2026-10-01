@@ -120,55 +120,7 @@ function fieldClass(hasError: boolean) {
             Kelola pemilihan Ketua OSIS &amp; Anggota MPK secara transparan, aman, dan tervalidasi.
           </p>
         </div>
-
         <!-- Telemetry -->
-        <div class="flex flex-col gap-6">
-          <div class="flex items-center gap-2">
-            <span class="relative flex size-2">
-              <span class="absolute inline-flex size-full animate-ping rounded-full bg-[var(--ui-success)] opacity-60" />
-              <span class="relative inline-flex size-2 rounded-full bg-[var(--ui-success)]" />
-            </span>
-            <p class="font-inter text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
-              Data Live
-            </p>
-          </div>
-
-          <div class="grid max-w-md grid-cols-3 gap-4">
-            <div
-              v-for="stat in stats"
-              :key="stat.label"
-              class="flex flex-col gap-1 rounded-xl border border-[var(--ui-border)] bg-[var(--ui-bg-elevated)]/70 p-4"
-            >
-              <p
-                class="font-inter text-lg font-bold tracking-tight"
-                :class="stat.class"
-              >
-                {{ stat.value }}
-              </p>
-              <p class="text-[11px] leading-tight text-[var(--ui-text-dimmed)]">
-                {{ stat.label }}
-              </p>
-            </div>
-          </div>
-
-          <div class="flex max-w-md flex-col gap-2">
-            <div class="flex items-center justify-between">
-              <p class="text-xs font-medium text-[var(--ui-text-muted)]">
-                Partisipasi Pemilih
-              </p>
-              <p class="font-inter text-xs font-semibold text-[var(--ui-text)]">
-                {{ partisipasi }}%
-              </p>
-            </div>
-            <UProgress
-              :model-value="partisipasi"
-              size="md"
-              :ui="{
-                indicator: 'rounded-full bg-gradient-to-r from-primary-500 to-primary-400 transition-all duration-500'
-              }"
-            />
-          </div>
-        </div>
       </div>
     </aside>
 
