@@ -20,9 +20,6 @@ const tabs: { id: JenisPemilihan, label: string, icon: string }[] = [
 
 const active = ref<JenisPemilihan>('osis')
 
-const colorMode = useColorMode()
-const isDark = computed(() => colorMode.value === 'dark')
-
 // `server: false` wajib: token ada di localStorage, server tidak punya. Tanpa
 // ini request `rekap-suara` jalan saat SSR tanpa header Authorization → 401,
 // dan error-nya ikut ter-serialize ke payload sehingga banner muncul begitu
@@ -60,7 +57,8 @@ const chartData = computed<ChartData<'pie'>>(() => {
           ? current.value.chart.data
           : list.map(item => item.total),
         backgroundColor: list.map(item => item.warna),
-        borderColor: isDark.value ? '#071A33' : '#FFFFFF',
+        // Cincin pemisah mengikuti navy card, bukan warna tema light.
+        borderColor: '#0a2a4e',
         borderWidth: 3,
         hoverOffset: 2
       }
@@ -75,10 +73,10 @@ const chartOptions = computed<ChartOptions<'pie'>>(() => ({
   plugins: {
     legend: { display: false },
     tooltip: {
-      backgroundColor: isDark.value ? '#0D2A4A' : '#FFFFFF',
-      titleColor: isDark.value ? '#D7E4F2' : '#071A33',
-      bodyColor: isDark.value ? '#AAB7C4' : '#55636E',
-      borderColor: isDark.value ? '#1A365D' : '#D5DEE8',
+      backgroundColor: 'rgba(10, 42, 78, 0.95)',
+      titleColor: '#E8F1FB',
+      bodyColor: '#A9C0D6',
+      borderColor: 'rgba(255, 255, 255, 0.14)',
       borderWidth: 1,
       padding: 12,
       cornerRadius: 10,
@@ -124,7 +122,7 @@ const leader = computed(() => current.value?.unggul_sementara?.nama ?? null)
     <!-- Segmented Switcher OSIS vs MPK -->
     <div class="flex justify-center">
       <div
-        class="inline-flex items-center gap-1 rounded-full border border-[var(--ui-border)] bg-[var(--ui-bg-elevated)] p-1"
+        class="inline-flex items-center gap-1 rounded-full border border-glass-300 bg-glass-100 p-1 backdrop-blur-xl"
       >
         <button
           v-for="tab in tabs"
@@ -149,7 +147,7 @@ const leader = computed(() => current.value?.unggul_sementara?.nama ?? null)
 
     <div
       v-if="current && current.status !== 'active'"
-      class="flex items-center gap-2 rounded-xl border border-dashed border-[var(--ui-border)] bg-[var(--ui-bg)]/60 px-4 py-3 text-sm text-[var(--ui-text-muted)]"
+      class="flex items-center gap-2 rounded-xl border border-dashed border-glass-300 bg-glass-50 px-4 py-3 text-sm text-[var(--ui-text-muted)]"
     >
       <UIcon
         name="i-lucide-lock"
@@ -192,7 +190,7 @@ const leader = computed(() => current.value?.unggul_sementara?.nama ?? null)
       <div
         v-else-if="isStale"
         key="loading"
-        class="h-96 animate-pulse rounded-2xl bg-[var(--ui-bg-accented)]"
+        class="h-96 animate-pulse rounded-2xl border border-glass-300 bg-glass-100"
       />
     </Transition>
   </div>
