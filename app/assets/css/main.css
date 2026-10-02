@@ -19,51 +19,50 @@
   --color-primary-800: #00398F;
   --color-primary-900: #002A66;
   --color-primary-950: #001A43;
+
+  /* Permukaan glass di atas foto background (login-bg.png).
+     Glass = putih transparan; makin tinggi angkanya makin pekat. */
+  --color-glass-50: rgb(255 255 255 / 0.03);
+  --color-glass-100: rgb(255 255 255 / 0.05);
+  --color-glass-200: rgb(255 255 255 / 0.08);
+  --color-glass-300: rgb(255 255 255 / 0.12);
+  --color-glass-400: rgb(255 255 255 / 0.22);
 }
 
+/*
+ * App ini dark-only: halaman login sudah hardcoded navy (#04162e) + foto
+ * background, jadi tema terang nggak pernah dipakai. Token `:root` sengaja
+ * disamakan dengan `.dark` supaya tema tetap navy walau class html-nya kelar,
+ * sekaligus biar `dark:` variant di komponen tetap kepakai.
+ */
 @layer theme {
-  :root {
-    --ui-radius: 0.5rem;
-    --ui-bg: #F5F7FA;
-    --ui-bg-muted: #EDF2F7;
-    --ui-bg-elevated: #FFFFFF;
-    --ui-bg-accented: #E1EAF3;
-    --ui-bg-inverted: #071A33;
-    --ui-text: #25323C;
-    --ui-text-muted: #55636E;
-    --ui-text-dimmed: #68787E;
-    --ui-text-toned: #42505C;
-    --ui-text-highlighted: #071A33;
-    --ui-text-inverted: #F5F7FA;
-    --ui-primary: #1677FF;
-    --ui-primary-contrast: #FFFFFF;
-    --ui-border: #D5DEE8;
-    --ui-border-muted: #E1EAF3;
-    --ui-border-accented: #C3CDD6;
-    --ui-border-inverted: #071A33;
-    --ui-success: #16A34A;
-    --ui-error: #DC2626;
-  }
-
+  :root,
   .dark {
-    --ui-bg: #071A33;
-    --ui-bg-muted: #0D2A4A;
-    --ui-bg-elevated: #0D2A4A;
-    --ui-bg-accented: #14212B;
+    --ui-radius: 0.5rem;
+
+    /* Warna dasar = navy yang sama dengan layar login. */
+    --ui-bg: #04162E;
+    --ui-bg-muted: #07203F;
+    --ui-bg-elevated: #0A2A4E;
+    --ui-bg-accented: rgb(255 255 255 / 0.08);
     --ui-bg-inverted: #F5F7FA;
-    --ui-text: #D7E4F2;
-    --ui-text-muted: #AAB7C4;
-    --ui-text-dimmed: #8B90A0;
-    --ui-text-toned: #C1C6D7;
+
+    --ui-text: #E8F1FB;
+    --ui-text-muted: #A9C0D6;
+    --ui-text-dimmed: #8AA5C0;
+    --ui-text-toned: #C9DAEA;
     --ui-text-highlighted: #FFFFFF;
-    --ui-text-inverted: #071A33;
+    --ui-text-inverted: #04162E;
+
+    /* Border tembus cahaya supaya menyatu sama permukaan glass, bukan garis gelap. */
+    --ui-border: rgb(255 255 255 / 0.12);
+    --ui-border-muted: rgb(255 255 255 / 0.08);
+    --ui-border-accented: rgb(255 255 255 / 0.22);
+    --ui-border-inverted: #F5F7FA;
+
     --ui-primary: #5CB8FF;
     --ui-primary-contrast: #00275F;
-    --ui-border: #1A365D;
-    --ui-border-muted: #14212B;
-    --ui-border-accented: #2A3641;
-    --ui-border-inverted: #F5F7FA;
-    --ui-success: #22C55E;
+    --ui-success: #34D399;
     --ui-error: #FFB4AB;
   }
 }
@@ -73,12 +72,10 @@
     scroll-behavior: smooth;
   }
 
+  /* Base navy polos — layer foto (login-bg.png) dipasang di dalam layout,
+     body cuma jadi warna cadangan biar nggak ada flash putih saat load. */
   body {
-    background-color: var(--ui-bg);
-    background-image:
-      radial-gradient(1100px 550px at 85% -10%, rgba(22, 119, 255, 0.16), transparent 60%),
-      radial-gradient(900px 500px at -5% 110%, rgba(22, 119, 255, 0.1), transparent 60%);
-    background-attachment: fixed;
+    background-color: #04162E;
     font-variant-numeric: tabular-nums;
   }
 
@@ -94,7 +91,7 @@
   }
 
   ::selection {
-    background-color: rgba(22, 119, 255, 0.35);
+    background-color: rgb(92 184 255 / 0.35);
   }
 }
 

@@ -132,7 +132,6 @@ const JENIS_LABEL: Record<JenisPemilihan, string> = { osis: 'OSIS', mpk: 'MPK' }
       <!-- Aktivitas Vote Terbaru -->
       <UCard
         variant="outline"
-        class="rounded-2xl border-[var(--ui-border)]"
       >
         <div class="flex flex-col gap-4">
           <div class="flex items-center gap-3">
@@ -154,7 +153,7 @@ const JENIS_LABEL: Record<JenisPemilihan, string> = { osis: 'OSIS', mpk: 'MPK' }
 
           <div
             v-if="!aktivitas?.data?.length"
-            class="rounded-xl border border-dashed border-[var(--ui-border)] bg-[var(--ui-bg)]/60 px-4 py-8 text-center"
+            class="rounded-xl border border-dashed border-glass-300 bg-glass-50 px-4 py-8 text-center"
           >
             <p class="text-sm font-semibold text-[var(--ui-text)]">
               Belum ada aktivitas
@@ -187,7 +186,6 @@ const JENIS_LABEL: Record<JenisPemilihan, string> = { osis: 'OSIS', mpk: 'MPK' }
       <!-- Ringkasan Per Event -->
       <UCard
         variant="outline"
-        class="rounded-2xl border-[var(--ui-border)]"
       >
         <div class="flex flex-col gap-6">
           <div class="flex items-center gap-3">
@@ -209,7 +207,7 @@ const JENIS_LABEL: Record<JenisPemilihan, string> = { osis: 'OSIS', mpk: 'MPK' }
 
           <div
             v-if="!events.length"
-            class="rounded-xl border border-dashed border-[var(--ui-border)] bg-[var(--ui-bg)]/60 px-4 py-8 text-center text-sm text-[var(--ui-text-dimmed)]"
+            class="rounded-xl border border-dashed border-glass-300 bg-glass-50 px-4 py-8 text-center text-sm text-[var(--ui-text-dimmed)]"
           >
             Belum ada pemilihan aktif.
           </div>

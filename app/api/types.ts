@@ -48,6 +48,8 @@ export interface DashboardResponse {
     search: string | null
     status: string | null
     jenis: string | null
+    /** Belum tentu di-echo backend yang sedang jalan — opsional. */
+    kelas?: string | null
     per_page: number
   }
   summary: DashboardSummary
@@ -93,6 +95,8 @@ export interface Pemilih {
   id: number
   nama: string
   nis: string
+  /** Boleh `null` — siswa yang belum diisi kelasnya. */
+  kelas: string | null
   role: Role | string
   sudah_memilih: boolean
   sudah_memilih_semua: boolean
@@ -264,6 +268,8 @@ export interface DashboardParams {
   status?: string
   /** `osis` | `mpk`. */
   jenis?: JenisPemilihan | ''
+  /** Nama kelas untuk filter, mis. `XII RPL 1`. */
+  kelas?: string
   per_page?: number
   page?: number
 }

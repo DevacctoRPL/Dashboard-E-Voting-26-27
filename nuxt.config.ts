@@ -8,6 +8,9 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  // App ini dark-only: halaman login sudah navy pekat, jadi tema terang nggak
+  // pernah dipakai dan tombol ganti tema sudah dihapus (lihat
+  // `plugins/color-mode.client.ts` buat Penetralan localStorage yang tertinggal).
   colorMode: {
     preference: 'dark',
     fallback: 'dark'

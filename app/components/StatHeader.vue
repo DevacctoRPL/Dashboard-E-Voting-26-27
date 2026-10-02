@@ -53,7 +53,6 @@ const stats = computed(() => [
       v-for="stat in stats"
       :key="stat.label"
       variant="outline"
-      class="rounded-2xl border-[var(--ui-border)]"
     >
       <div class="flex flex-col gap-4">
         <div class="flex items-start justify-between">
@@ -96,7 +95,7 @@ const stats = computed(() => [
     <!-- Turnout Progress -->
     <UCard
       variant="outline"
-      class="rounded-2xl border-[var(--ui-border)] md:col-span-3"
+      class="md:col-span-3"
     >
       <div class="flex flex-col gap-3">
         <div class="flex items-center justify-between gap-4">

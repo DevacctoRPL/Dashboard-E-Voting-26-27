@@ -39,7 +39,23 @@ async function logout() {
 </script>
 
 <template>
-  <div class="min-h-screen lg:flex">
+  <div class="relative min-h-screen lg:flex">
+    <!-- ===== Background: foto yang sama dengan halaman login ===== -->
+    <div
+      class="pointer-events-none fixed inset-0 -z-10 bg-[#04162e] bg-cover bg-center"
+      style="background-image: url('/images/login-bg.png')"
+      aria-hidden="true"
+    />
+    <div
+      class="pointer-events-none fixed inset-0 -z-10 bg-[#04162e]/72"
+      aria-hidden="true"
+    />
+    <!-- Vignette biar konten di tengah nggak silau sama foto -->
+    <div
+      class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(1200px_600px_at_50%_0%,transparent,rgba(4,22,46,0.55)_70%)]"
+      aria-hidden="true"
+    />
+
     <a
       href="#main-content"
       class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-primary-500 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
@@ -48,7 +64,7 @@ async function logout() {
     </a>
 
     <!-- ===== Sidebar ===== -->
-    <aside class="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col gap-8 border-r border-[var(--ui-border)] bg-[var(--ui-bg-elevated)]/85 px-5 py-6 backdrop-blur-xl lg:flex">
+    <aside class="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col gap-8 border-r border-glass-300 bg-[#04162e]/70 px-5 py-6 backdrop-blur-2xl lg:flex">
       <!-- Logo -->
       <NuxtLink
         to="/"
@@ -104,8 +120,8 @@ async function logout() {
       </nav>
 
       <!-- Bottom -->
-      <div class="flex flex-col gap-3 border-t border-[var(--ui-border)] pt-4">
-        <div class="flex items-center gap-3 rounded-2xl border border-[var(--ui-border)] bg-[var(--ui-bg-accented)]/60 p-3">
+      <div class="flex flex-col gap-3 border-t border-glass-300 pt-4">
+        <div class="flex items-center gap-3 rounded-2xl border border-glass-200 bg-glass-100 p-3">
           <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-400 text-sm font-bold text-white">
             {{ userInitials }}
           </span>
@@ -135,7 +151,7 @@ async function logout() {
     <!-- ===== Main Area ===== -->
     <div class="flex min-h-screen flex-1 flex-col lg:pl-72">
       <!-- Top Header Bar -->
-      <header class="sticky top-0 z-30 border-b border-[var(--ui-border)] bg-[var(--ui-bg)]/80 backdrop-blur-xl">
+      <header class="sticky top-0 z-30 border-b border-glass-300 bg-[#04162e]/65 backdrop-blur-2xl">
         <div class="flex items-center justify-between gap-4 px-4 py-4 md:px-8">
           <div class="flex min-w-0 items-center gap-3">
             <NuxtLink
@@ -158,7 +174,7 @@ async function logout() {
           </div>
 
           <div class="flex shrink-0 items-center gap-3">
-            <span class="hidden items-center gap-2 rounded-full border border-[var(--ui-border)] bg-[var(--ui-bg-elevated)] px-3 py-1.5 sm:inline-flex">
+            <span class="hidden items-center gap-2 rounded-full border border-glass-300 bg-glass-100 px-3 py-1.5 backdrop-blur-xl sm:inline-flex">
               <span class="relative flex size-2">
                 <span
                   v-if="isPolling"
@@ -173,12 +189,6 @@ async function logout() {
                 {{ isPolling ? 'Live' : 'Idle' }}
               </span>
             </span>
-
-            <UColorModeButton
-              square
-              aria-label="Ganti tema"
-              class="size-10 rounded-xl border border-[var(--ui-border)] bg-[var(--ui-bg-elevated)] text-[var(--ui-text-muted)] transition-colors hover:bg-[var(--ui-bg-accented)] hover:text-[var(--ui-text)]"
-            />
           </div>
         </div>
       </header>
@@ -193,7 +203,7 @@ async function logout() {
     </div>
 
     <!-- ===== Mobile Nav ===== -->
-    <nav class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-[var(--ui-border)] bg-[var(--ui-bg)]/95 px-2 py-2 backdrop-blur-xl lg:hidden">
+    <nav class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-glass-300 bg-[#04162e]/85 px-2 py-2 backdrop-blur-2xl lg:hidden">
       <NuxtLink
         v-for="item in mainMenu"
         :key="item.label"

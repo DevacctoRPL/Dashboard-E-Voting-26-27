@@ -39,7 +39,6 @@ const leaderId = computed(() => {
 <template>
   <UCard
     variant="outline"
-    class="rounded-2xl border-[var(--ui-border)]"
   >
     <template #header>
       <div class="flex items-center gap-3">
@@ -84,7 +83,7 @@ const leaderId = computed(() => {
       <div class="flex flex-col gap-2.5">
         <p
           v-if="leader === null"
-          class="rounded-xl border border-dashed border-[var(--ui-border)] bg-[var(--ui-bg)] px-3.5 py-3 text-center text-xs text-[var(--ui-text-dimmed)]"
+          class="rounded-xl border border-dashed border-glass-300 bg-glass-50 px-3.5 py-3 text-center text-xs text-[var(--ui-text-dimmed)]"
         >
           Belum ada suara masuk — belum ada kandidat unggul.
         </p>
@@ -96,7 +95,7 @@ const leaderId = computed(() => {
           :class="[
             item.kandidat_id === leaderId
               ? 'border-[var(--ui-success)]/50 bg-[var(--ui-success)]/5'
-              : 'border-[var(--ui-border)] bg-[var(--ui-bg)]'
+              : 'border-glass-200 bg-glass-100'
           ]"
         >
           <span

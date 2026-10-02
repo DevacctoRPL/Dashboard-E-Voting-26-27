@@ -3,6 +3,7 @@ export interface ExportRow {
   'No': number
   'NIS': string
   'Nama': string
+  'Kelas': string
   'Role': string
   'Status': string
   'Info Voting': string
@@ -17,6 +18,7 @@ export async function exportSiswaToExcel(rows: ExportRow[], sheetName = 'Data Pe
     { wch: 5 },
     { wch: 14 },
     { wch: 24 },
+    { wch: 14 },
     { wch: 10 },
     { wch: 14 },
     { wch: 22 },
